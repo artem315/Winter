@@ -97,7 +97,7 @@ public final class ModBlocks {
 	public static final Block GREEN_GIFT = register("green_gift", gift(MapColor.GREEN));
 	public static final Block BLUE_GIFT = register("blue_gift", gift(MapColor.BLUE));
 	public static final Block FIREPLACE = register("fireplace", new FireplaceBlock(AbstractBlock.Settings.create()
-		.mapColor(MapColor.RED).instrument(NoteBlockInstrument.BASEDRUM).requiresTool().strength(2.0F, 6.0F)
+		.mapColor(MapColor.RED).instrument(NoteBlockInstrument.BASEDRUM).requiresTool().strength(2.0F, 6.0F).nonOpaque()
 		.luminance(state -> state.get(FireplaceBlock.LIT) ? 14 : 0)));
 
 	// --- Yeti fur ------------------------------------------------------------------------------------

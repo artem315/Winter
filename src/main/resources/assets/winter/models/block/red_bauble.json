@@ -1,6 +1,7 @@
 {
   "parent": "winter:block/template_bauble",
   "textures": {
-    "bauble": "winter:block/red_bauble"
+    "bauble": "winter:block/red_bauble",
+    "particle": "winter:block/red_bauble"
   }
 }

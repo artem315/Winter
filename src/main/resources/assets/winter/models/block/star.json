@@ -1,6 +1,207 @@
 {
-  "parent": "minecraft:block/cross",
-  "textures": {
-    "cross": "winter:block/star"
-  }
+	"format_version": "26.3",
+	"credit": "Made with Blockbench",
+	"parent": "block/block",
+	"textures": {
+		"particle": "winter:block/star",
+		"star": "winter:block/star"
+	},
+	"elements": [
+		{
+			"name": "plane_a",
+			"from": [
+				0.8,
+				0,
+				8
+			],
+			"to": [
+				15.2,
+				16,
+				8
+			],
+			"rotation": {
+				"angle": 45,
+				"axis": "y",
+				"origin": [
+					8,
+					8,
+					8
+				],
+				"rescale": true
+			},
+			"faces": {
+				"north": {
+					"uv": [
+						0,
+						0,
+						16,
+						16
+					],
+					"texture": "#star"
+				},
+				"south": {
+					"uv": [
+						0,
+						0,
+						16,
+						16
+					],
+					"texture": "#star"
+				}
+			},
+			"shade": false
+		},
+		{
+			"name": "plane_b",
+			"from": [
+				8,
+				0,
+				0.8
+			],
+			"to": [
+				8,
+				16,
+				15.2
+			],
+			"rotation": {
+				"angle": 45,
+				"axis": "y",
+				"origin": [
+					8,
+					8,
+					8
+				],
+				"rescale": true
+			},
+			"faces": {
+				"east": {
+					"uv": [
+						0,
+						0,
+						16,
+						16
+					],
+					"texture": "#star"
+				},
+				"west": {
+					"uv": [
+						0,
+						0,
+						16,
+						16
+					],
+					"texture": "#star"
+				}
+			},
+			"shade": false
+		},
+		{
+			"name": "socket",
+			"from": [
+				6.5,
+				0,
+				6.5
+			],
+			"to": [
+				9.5,
+				1,
+				9.5
+			],
+			"rotation": {
+				"angle": 0,
+				"axis": "y",
+				"origin": [
+					8,
+					8,
+					8
+				]
+			},
+			"faces": {
+				"north": {
+					"uv": [
+						6,
+						7,
+						9,
+						8
+					],
+					"texture": "#star"
+				},
+				"east": {
+					"uv": [
+						6,
+						7,
+						9,
+						8
+					],
+					"texture": "#star"
+				},
+				"south": {
+					"uv": [
+						6,
+						7,
+						9,
+						8
+					],
+					"texture": "#star"
+				},
+				"west": {
+					"uv": [
+						6,
+						7,
+						9,
+						8
+					],
+					"texture": "#star"
+				},
+				"up": {
+					"uv": [
+						6,
+						7,
+						9,
+						8
+					],
+					"texture": "#star"
+				},
+				"down": {
+					"uv": [
+						6,
+						7,
+						9,
+						8
+					],
+					"texture": "#star",
+					"cullface": "down"
+				}
+			}
+		}
+	],
+	"groups": [
+		{
+			"name": "star",
+			"origin": [
+				8,
+				8,
+				8
+			],
+			"scope": 0,
+			"color": 0,
+			"children": [
+				0,
+				1
+			]
+		},
+		{
+			"name": "socket",
+			"origin": [
+				8,
+				8,
+				8
+			],
+			"scope": 0,
+			"color": 0,
+			"children": [
+				2
+			]
+		}
+	]
 }

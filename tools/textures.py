@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """
-Generates every texture of the Winter mod as pixel art (no external assets needed).
+Generates the block, item, armor and GUI textures of the Winter mod as pixel art (no external assets needed).
+Entity textures belong to the Blockbench models (blockbench/*.bbmodel, see tools/models.py).
 
 Usage:  python3 tools/textures.py            -> writes PNGs into src/main/resources/assets/winter/textures
         python3 tools/textures.py --preview  -> also writes build/texture-preview.png (contact sheet)
@@ -848,7 +849,8 @@ def block_snowy_leaves():
     return im
 
 
-def block_icicle():
+def block_icicle_sprite():
+    """Flat icicle picture used for the item icon."""
     im = new()
     edge, mid, core, white = hexc("8CC3E6", 235), hexc("BFE4F8", 235), hexc("E4F6FF", 240), hexc("FFFFFF", 245)
     for x in range(16):
@@ -864,6 +866,23 @@ def block_icicle():
                     im.putpixel((x, y), core if dx == 0 else (mid if abs(dx) < half else edge))
         im.putpixel((cx, length), edge)
         im.putpixel((cx - 1 if cx > 0 else cx, 2), white)
+    return im
+
+
+def block_icicle():
+    """Ice material for the 3D icicle model (made in Blockbench)."""
+    rnd = random.Random(14)
+    im = new()
+    phases = [rnd.random() * 6.28 for _ in range(16)]
+    for y in range(16):
+        for x in range(16):
+            v = math.sin(y * 0.5 + phases[x]) * 0.5 + 0.5
+            c = mix(hexc("D9F1FC"), hexc("A8D6F2"), y / 15.0)
+            if v > 0.85:
+                c = hexc("F4FCFF")
+            elif v < 0.15:
+                c = mix(c, hexc("7FB8E0"), 0.6)
+            im.putpixel((x, y), jitter(c, rnd, 3))
     return im
 
 
@@ -942,85 +961,72 @@ def block_garland_frames():
 
 
 def block_bauble(color):
+    """Layout for the Blockbench bauble model: ball material 8x8 at (0,0), cap 3x2 at (9,0), string 1x6 at (13,0)."""
     base, light, dark = {
         "red": (hexc("D3232F"), hexc("F2545B"), hexc("8F121B")),
         "gold": (hexc("E3B23C"), hexc("FFE07A"), hexc("A87A1A")),
         "blue": (hexc("2E6FD6"), hexc("6FA6F5"), hexc("1A438F")),
     }[color]
     im = new()
-    for y in range(6):
-        for x in range(6):
-            c = base
-            if (x, y) in ((0, 0), (5, 0), (0, 5), (5, 5)):
-                c = dark
-            elif x == 5 or y == 5:
-                c = mix(base, dark, 0.5)
-            elif x == 0 or y == 0:
-                c = mix(base, light, 0.4)
+    for y in range(8):
+        for x in range(8):
+            t = (x + y) / 14.0
+            c = mix(light, base, min(1.0, t * 1.6)) if t < 0.5 else mix(base, dark, (t - 0.5) * 1.6)
             im.putpixel((x, y), c)
-    im.putpixel((1, 1), hexc("FFFFFF"))
-    im.putpixel((2, 1), light)
-    im.putpixel((1, 2), light)
+    for (x, y) in ((2, 2), (3, 2), (2, 3)):
+        im.putpixel((x, y), hexc("FFFFFF"))
     cap = hexc("C9CED6") if color == "gold" else hexc("E0B43A")
-    for x in range(7, 10):
+    for x in range(9, 12):
         im.putpixel((x, 0), cap)
+        im.putpixel((x, 1), scale(cap, 0.75))
     for y in range(6):
-        im.putpixel((11, y), hexc("C9A227"))
+        im.putpixel((13, y), hexc("C9A227"))
     return im
 
 
 def block_gift(wrap, wrap_dark, ribbon, ribbon_dark, dots):
+    """Layout for the Blockbench gift model.
+    side: rows 0-2 ribbon (bow), rows 3-5 lid band, rows 6-15 box side. top: the lid."""
     rnd = random.Random(sum(wrap))
     side, top = new(), new()
-    for im, is_top in ((side, False), (top, True)):
+    for im in (side, top):
         for y in range(16):
             for x in range(16):
                 c = wrap
                 if (x + 2 * (y // 4)) % 4 == 0 and y % 4 == 1:
                     c = dots
                 im.putpixel((x, y), jitter(c, rnd, 3))
-    # side: edges of the visible box (uv 2..14, rows 4..16), vertical ribbon in the middle
-    for y in range(4, 16):
-        for x in (2, 13):
-            side.putpixel((x, y), wrap_dark)
+    for x in range(16):
+        side.putpixel((x, 0), ribbon)
+        side.putpixel((x, 1), ribbon if x % 4 else mix(ribbon, ribbon_dark, 0.5))
+        side.putpixel((x, 2), ribbon_dark)
+        for y in (3, 4):
+            side.putpixel((x, y), jitter(scale(wrap, 1.1), rnd, 3))
+        side.putpixel((x, 5), wrap_dark)
+        side.putpixel((x, 15), wrap_dark)
+    for y in range(3, 16):
         side.putpixel((7, y), ribbon)
         side.putpixel((8, y), ribbon_dark)
-    for x in range(2, 14):
-        side.putpixel((x, 15), wrap_dark)
-        side.putpixel((x, 4), scale(wrap, 1.15))
-    side.putpixel((7, 4), ribbon)
-    side.putpixel((8, 4), ribbon)
-    # bow (rows 0..3, columns 4..11)
-    for y in range(4):
-        for x in range(16):
-            side.putpixel((x, y), (0, 0, 0, 0))
-    bow = [
-        ".RR..RR.",
-        "RrRRRRrR",
-        "RRrRRrRR",
-        ".R.RR.R.",
-    ]
-    for y, row in enumerate(bow):
-        for x, ch in enumerate(row):
-            if ch == "R":
-                side.putpixel((4 + x, y), ribbon)
-            elif ch == "r":
-                side.putpixel((4 + x, y), ribbon_dark)
-    # top: ribbon cross
-    for i in range(2, 14):
+    for y in range(6, 16):
+        side.putpixel((2, y), mix(wrap, wrap_dark, 0.6))
+        side.putpixel((13, y), mix(wrap, wrap_dark, 0.6))
+    for i in range(16):
         top.putpixel((7, i), ribbon)
         top.putpixel((8, i), ribbon_dark)
         top.putpixel((i, 7), ribbon)
         top.putpixel((i, 8), ribbon_dark)
-    for i in range(2, 14):
-        for (x, y) in ((2, i), (13, i), (i, 2), (i, 13)):
+    for i in range(1, 15):
+        for (x, y) in ((1, i), (14, i), (i, 1), (i, 14)):
             if top.getpixel((x, y)) not in (ribbon, ribbon_dark):
-                top.putpixel((x, y), wrap_dark)
+                top.putpixel((x, y), mix(wrap, wrap_dark, 0.6))
     return side, top
 
 
 def block_fireplace():
-    side = bricks(hexc("A0442C"), hexc("B85A3E"), hexc("7E3220"), hexc("C9B9A6"), 51)
+    """Textures for the 3D fireplace model (made in Blockbench)."""
+    out = {}
+    out["fireplace_side"] = bricks(hexc("A0442C"), hexc("B85A3E"), hexc("7E3220"), hexc("C9B9A6"), 51)
+    out["fireplace_soot"] = bricks(hexc("3E2C26"), hexc("4C3730"), hexc("2C1F1B"), hexc("1C1310"), 54)
     rnd = random.Random(52)
     top = new()
     for y in range(16):
@@ -1033,62 +1039,71 @@ def block_fireplace():
             elif x in (1, 8) or y in (1, 8):
                 c = hexc("9E9E9E")
             top.putpixel((x, y), jitter(c, rnd, 4))
+    out["fireplace_top"] = top
 
-    def front_base():
-        im = bricks(hexc("A0442C"), hexc("B85A3E"), hexc("7E3220"), hexc("C9B9A6"), 53)
-        # mantel shelf
+    mantel = new()
+    for y in range(16):
         for x in range(16):
-            im.putpixel((x, 3), hexc("8B5E34"))
-            im.putpixel((x, 4), hexc("6B4626"))
+            c = hexc("6B4626")
+            if y % 4 == 3:
+                c = hexc("472C15")
+            elif (x * 3 + y * 7) % 11 == 0:
+                c = hexc("7E5531")
+            mantel.putpixel((x, y), jitter(c, rnd, 3))
+    out["fireplace_mantel"] = mantel
+
+    log = new()
+    phases = [rnd.random() * 6.28 for _ in range(16)]
+    for y in range(16):
         for x in range(16):
-            im.putpixel((x, 2), hexc("A87A4A"))
-        return im
+            v = math.sin(x * 1.7 + phases[y // 4]) * 0.5 + 0.5
+            c = hexc("5A3A1E") if v > 0.4 else hexc("3E2812")
+            if v > 0.9:
+                c = hexc("6E4A2A")
+            log.putpixel((x, y), jitter(c, rnd, 3))
+    out["fireplace_log"] = log
 
-    def opening(im, interior):
-        for y in range(7, 16):
-            for x in range(3, 13):
-                inside = not (y == 7 and (x < 5 or x > 10)) and not (y == 8 and (x < 4 or x > 11))
-                if not inside:
-                    continue
-                frame = (y == 7) or (y == 8 and (x in (4, 11))) or x in (3, 12) or (y == 8 and x in (5, 10))
-                if frame:
-                    im.putpixel((x, y), hexc("9E9A94"))
-                else:
-                    im.putpixel((x, y), interior(x, y))
+    log_top = new()
+    for y in range(16):
+        for x in range(16):
+            r = max(abs(x - 7.5), abs(y - 7.5))
+            if r > 6.5:
+                c = hexc("4E3218")
+            elif int(r) % 2 == 0:
+                c = hexc("A87A4A")
+            else:
+                c = hexc("8B5E34")
+            log_top.putpixel((x, y), jitter(c, rnd, 3))
+    out["fireplace_log_top"] = log_top
 
-    front = front_base()
-    opening(front, lambda x, y: hexc("4A4A4A") if y == 15 else (hexc("1E1614") if (x + y) % 3 else hexc("2A1E1A")))
-
-    flames = [
-        ["..f.....f.", ".fY..f.fY.", ".fYf.fYfYf", "fYwYfYwYf.", "fYwYYwYYf.", ".fYYYYYYf."],
-        [".....f....", "..f.fYf.f.", ".fYffYYfYf", "fYYfYwYYf.", "fYwYYwYwYf", ".fYYYYYYf."],
-        ["...f..f...", ".f.fYffY..", "fYffYYfYf.", "fYwYYYwYYf", ".YwYwYYwYf", ".fYYYYYYf."],
-    ]
+    # animated fire: 8 frames, flames rising from the bottom, transparent above
     frames = []
-    for frame in flames:
-        im = front_base()
-
-        def interior(x, y, frame=frame):
-            if y == 15:
-                return hexc("5A3A1E")
-            if y == 14:
-                return hexc("7A5230") if x % 3 else hexc("FF7A1A")
-            fy = y - 8
-            if 0 <= fy < len(frame):
-                ch = frame[fy][x - 3] if 0 <= x - 3 < len(frame[fy]) else "."
-                if ch == "f":
-                    return hexc("E2462B")
-                if ch == "Y":
-                    return hexc("F7931E")
-                if ch == "w":
-                    return hexc("FFE36E")
-            return hexc("3A1E12")
-        opening(im, interior)
+    for f in range(8):
+        frnd = random.Random(500 + f)
+        im = new()
+        heights = []
+        for x in range(16):
+            base = 7 + 5 * math.sin((x + f * 0.9) * 0.7) * math.cos(x * 0.33 - f * 0.5)
+            heights.append(max(2, min(15, int(base + frnd.uniform(-1.5, 2.5)))))
+        for x in range(16):
+            h = heights[x]
+            for k in range(h):
+                y = 15 - k
+                t = k / max(1, h - 1)
+                if t < 0.25:
+                    c = hexc("FFF4C2")
+                elif t < 0.5:
+                    c = hexc("FFD23F")
+                elif t < 0.8:
+                    c = hexc("F7931E")
+                else:
+                    c = hexc("E2462B")
+                if x in (0, 15) and t > 0.5:
+                    continue
+                im.putpixel((x, y), c)
         frames.append(im)
-    on = new(16, 48)
-    for i, fr in enumerate(frames):
-        on.paste(fr, (0, i * 16))
-    return side, top, front, on, frames[0]
+    out["fireplace_fire_frames"] = frames
+    return out
 
 
 def gen_blocks():
@@ -1108,6 +1123,7 @@ def gen_blocks():
     save(block_fur(71), "block", "yeti_fur_block.png")
     save(block_snowy_leaves(), "block", "snowy_spruce_leaves.png")
     save(block_icicle(), "block", "icicle.png")
+    save(block_icicle_sprite(), "item", "icicle.png")
     save(block_sapling(), "block", "festive_spruce_sapling.png")
     save(block_star(), "block", "star.png")
 
@@ -1131,13 +1147,16 @@ def gen_blocks():
         save(side, "block", f"{color}_gift_side.png")
         save(top, "block", f"{color}_gift_top.png")
 
-    side, top, front, on, on_first = block_fireplace()
-    save(side, "block", "fireplace_side.png")
-    save(top, "block", "fireplace_top.png")
-    save(front, "block", "fireplace_front.png")
-    save(on, "block", "fireplace_front_on.png", preview=False)
-    PREVIEW.append(("block/fireplace_front_on.png", on_first))
-    save_mcmeta(4, "block", "fireplace_front_on.png")
+    fp = block_fireplace()
+    for name in ("fireplace_side", "fireplace_soot", "fireplace_top", "fireplace_mantel", "fireplace_log",
+                 "fireplace_log_top"):
+        save(fp[name], "block", f"{name}.png")
+    fire = new(16, 16 * len(fp["fireplace_fire_frames"]))
+    for i, fr in enumerate(fp["fireplace_fire_frames"]):
+        fire.paste(fr, (0, i * 16))
+    save(fire, "block", "fireplace_fire.png", preview=False)
+    PREVIEW.append(("block/fireplace_fire.png", fp["fireplace_fire_frames"][0]))
+    save_mcmeta(3, "block", "fireplace_fire.png")
 
 
 # =====================================================================================================
@@ -1289,181 +1308,7 @@ def armor_textures():
     return layer1, layer2, skates
 
 
-# --- Entities ---------------------------------------------------------------------------------------
-
-def yeti_texture():
-    rnd = random.Random(91)
-    im = new(128, 128)
-    fur_base, fur_l, fur_d, fur_dd = hexc("EEF3F6"), hexc("FFFFFF"), hexc("D3DEE6"), hexc("B9C8D3")
-    skin, skin_d = hexc("6C8EA8"), hexc("4E6E88")
-
-    def fur(x, y, seed=0):
-        v = math.sin(y * 1.1 + (x * 7 + seed) % 13) * 0.5 + 0.5
-        r = rnd.random()
-        c = fur_base
-        if v > 0.8:
-            c = fur_l
-        elif v < 0.1:
-            c = fur_d
-        if r < 0.03:
-            c = fur_dd
-        return jitter(c, rnd, 4)
-
-    def head(face, x, y, fw, fh):
-        if face == "front":
-            if y <= 1 or x == 0 or x == fw - 1:
-                return fur(x, y, 1)
-            if y == 2:
-                return fur_d  # brow ridge
-            if y == 3 and x in (2, 5):
-                return hexc("101820")
-            if y == 3 and x in (1, 6):
-                return hexc("7FD4FF")  # icy glint
-            if y == 6 and 2 <= x <= 5:
-                return hexc("2A3440")
-            if y == 7 and x in (2, 5):
-                return hexc("FFFFFF")  # fangs
-            if y == 7 and x in (3, 4):
-                return hexc("2A3440")
-            if y >= 8:
-                return fur(x, y, 2)
-            return jitter(skin, rnd, 4)
-        return fur(x, y, 3)
-
-    paint_box(im, 0, 0, 8, 10, 8, head)
-    paint_box(im, 24, 0, 2, 4, 2, lambda f, x, y, fw, fh: skin_d if y == fh - 1 else skin)
-
-    def body(face, x, y, fw, fh):
-        if face == "front" and 5 <= x <= 12 and 2 <= y <= 9:
-            return mix(fur(x, y, 4), hexc("FFFFFF"), 0.3)
-        return fur(x, y, 5)
-
-    paint_box(im, 0, 40, 18, 12, 11, body)
-    paint_box(im, 0, 70, 9, 5, 6, lambda f, x, y, fw, fh: fur(x, y, 6))
-
-    def arm(face, x, y, fw, fh):
-        if face == "bottom" or (face != "top" and y >= fh - 5):
-            if face != "bottom" and y == fh - 5:
-                return fur_d
-            return jitter(skin_d if (x + y) % 4 == 0 else skin, rnd, 4)
-        return fur(x, y, 7)
-
-    paint_box(im, 60, 21, 4, 30, 6, arm)
-    paint_box(im, 60, 58, 4, 30, 6, arm)
-
-    def leg(face, x, y, fw, fh):
-        if face == "bottom" or (face != "top" and y >= fh - 2):
-            return jitter(skin_d, rnd, 4)
-        return fur(x, y, 8)
-
-    paint_box(im, 37, 0, 6, 16, 5, leg)
-    paint_box(im, 60, 0, 6, 16, 5, leg)
-    return im
-
-
-def ded_moroz_texture():
-    rnd = random.Random(101)
-    im = new(64, 64)
-    red, red_d, red_l = hexc("B3121F"), hexc("850C16"), hexc("D02232")
-    white, white_d = hexc("F7F7F7"), hexc("D5DCE2")
-    skin, skin_d = hexc("F1C27D"), hexc("DDA868")
-    silver = hexc("CFE3F5")
-
-    def coat(x, y):
-        c = red if (x * 3 + y) % 7 else red_l
-        if (x + 2 * y) % 9 == 0:
-            c = silver  # snowflake embroidery dots
-        return jitter(c, rnd, 3)
-
-    def head(face, x, y, fw, fh):
-        if face == "top":
-            return red
-        if face == "bottom":
-            return white
-        if y <= 1:
-            return white if (x + y) % 3 else white_d
-        if face == "front":
-            if y == 2:
-                return white if x in (1, 2, 5, 6) else skin  # brows
-            if y == 3:
-                if x in (2, 5):
-                    return hexc("2E6DB4")
-                if x in (1, 6):
-                    return hexc("FFFFFF")
-                return skin
-            if y == 4:
-                return hexc("E89A8A") if x in (1, 6) else skin  # rosy cheeks
-            if y == 5:
-                return white if 1 <= x <= 6 else skin  # moustache
-            return white if (x + y) % 4 else white_d  # beard
-        if face in ("right", "left"):
-            if y <= 4:
-                return skin_d if (y == 3 and x in (3, 4)) else white
-            return white if (x + y) % 4 else white_d
-        return white if (x + y) % 5 else white_d  # back: long white hair
-
-    paint_box(im, 0, 0, 8, 10, 8, head)
-    paint_box(im, 24, 0, 2, 4, 2, lambda f, x, y, fw, fh: hexc("E07A7A") if f != "top" else skin)
-
-    def hat(face, x, y, fw, fh):
-        if face == "top":
-            return jitter(red, rnd, 3)
-        if face == "bottom":
-            return None
-        if y <= 1:
-            return white if (x + y) % 2 else white_d
-        if face == "front" and y >= 6:
-            return white if (x + y) % 3 else white_d  # fluffy beard layer
-        return None
-
-    paint_box(im, 32, 0, 8, 10, 8, hat)
-
-    def body(face, x, y, fw, fh):
-        if face in ("top", "bottom"):
-            return red
-        if face == "front" and x in (3, 4):
-            return white
-        if y == 6:
-            return hexc("E0B43A") if face == "front" else white
-        return coat(x, y)
-
-    paint_box(im, 16, 20, 8, 12, 6, body)
-
-    def robe(face, x, y, fw, fh):
-        if face == "top":
-            return red
-        if face == "bottom":
-            return white
-        if y >= fh - 3:
-            return white if (x + y) % 3 else white_d
-        if face == "front" and x in (3, 4):
-            return white if (x + y) % 3 else white_d
-        if y == 6:
-            return hexc("E0B43A") if face == "front" and x in (2, 5) else white
-        return coat(x, y)
-
-    paint_box(im, 0, 38, 8, 20, 6, robe)
-
-    def arm(face, x, y, fw, fh):
-        if face == "top":
-            return red
-        if face == "bottom" or y >= fh - 2:
-            return white
-        return coat(x, y)
-
-    paint_box(im, 44, 22, 4, 8, 4, arm)
-    paint_box(im, 40, 38, 8, 4, 4, lambda f, x, y, fw, fh: jitter(red_l if (x + y) % 3 else red, rnd, 3))
-
-    def leg(face, x, y, fw, fh):
-        if face == "bottom":
-            return white_d
-        if y >= 8:
-            return white if (x + y) % 3 else white_d
-        return red_d
-
-    paint_box(im, 0, 22, 4, 12, 4, leg)
-    return im
-
+# Entity textures (yeti, Father Frost) are painted in tools/models.py, next to the Blockbench models.
 
 # =====================================================================================================
 # GUI: effect icon, mod icon
@@ -1569,8 +1414,6 @@ def main():
     save(l1, "models", "armor", "winter_clothing_layer_1.png")
     save(l2, "models", "armor", "winter_clothing_layer_2.png")
     save(sk, "models", "armor", "ice_skates_layer_1.png")
-    save(yeti_texture(), "entity", "yeti.png")
-    save(ded_moroz_texture(), "entity", "ded_moroz.png")
     save(effect_warmth(), "mob_effect", "warmth.png")
     icon = mod_icon()
     icon_path = os.path.join(OUT, "..", "icon.png")

@@ -19,8 +19,8 @@ import net.minecraft.world.WorldView;
 public class HangingDecorationBlock extends Block {
 	public static final MapCodec<HangingDecorationBlock> CODEC = createCodec(HangingDecorationBlock::new);
 	private static final VoxelShape SHAPE = VoxelShapes.union(
-		Block.createCuboidShape(5.0, 3.0, 5.0, 11.0, 9.0, 11.0),
-		Block.createCuboidShape(7.0, 9.0, 7.0, 9.0, 16.0, 9.0)
+		Block.createCuboidShape(4.5, 2.5, 4.5, 11.5, 9.5, 11.5),
+		Block.createCuboidShape(6.5, 9.0, 6.5, 9.5, 16.0, 9.5)
 	);
 
 	public HangingDecorationBlock(Settings settings) {

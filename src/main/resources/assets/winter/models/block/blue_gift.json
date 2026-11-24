@@ -2,6 +2,7 @@
   "parent": "winter:block/template_gift",
   "textures": {
     "side": "winter:block/blue_gift_side",
-    "top": "winter:block/blue_gift_top"
+    "top": "winter:block/blue_gift_top",
+    "particle": "winter:block/blue_gift_side"
   }
 }

@@ -23,12 +23,12 @@ public final class ModEntities {
 
 	public static final EntityType<YetiEntity> YETI = Registry.register(Registries.ENTITY_TYPE, WinterMod.id("yeti"),
 		EntityType.Builder.create(YetiEntity::new, SpawnGroup.MONSTER)
-			.dimensions(1.4F, 2.7F).eyeHeight(2.3F).maxTrackingRange(10)
+			.dimensions(1.5F, 2.6F).eyeHeight(2.1F).maxTrackingRange(10)
 			.build("yeti"));
 
 	public static final EntityType<DedMorozEntity> DED_MOROZ = Registry.register(Registries.ENTITY_TYPE, WinterMod.id("ded_moroz"),
 		EntityType.Builder.create(DedMorozEntity::new, SpawnGroup.CREATURE)
-			.dimensions(0.6F, 1.95F).eyeHeight(1.62F).maxTrackingRange(10)
+			.dimensions(0.7F, 2.3F).eyeHeight(1.85F).maxTrackingRange(10)
 			.build("ded_moroz"));
 
 	private ModEntities() {

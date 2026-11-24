@@ -114,8 +114,26 @@
 
 ## Существа
 
-* **Йети** — огромный зверь снежных гор и равнин, появляется ночью. 60 здоровья, бьёт так, что подбрасывает в воздух и замораживает. Из него выпадают мех йети, снежки и иногда морозный кристалл.
-* **Дед Мороз** — редкий торговец, бродит по снежным биомам. Продаёт угощения, украшения, подарки, саженцы ёлок, коньки, книги зачарований и свой посох. Через пару игровых дней уходит. Обижать его не стоит: из него выпадает только уголь.
+* **Йети** — огромный сутулый зверь с рогами и ледяными глазами, живёт в снежных горах и на равнинах, появляется ночью. 60 здоровья, бьёт так, что подбрасывает в воздух и замораживает. Из него выпадают мех йети, снежки и иногда морозный кристалл.
+* **Дед Мороз** — в длинной шубе, с бородой до пояса и посохом. Редкий торговец, бродит по снежным биомам. Продаёт угощения, украшения, подарки, саженцы ёлок, коньки, книги зачарований и свой посох. Через пару игровых дней уходит. Обижать его не стоит: из него выпадает только уголь.
+
+## Модели (Blockbench)
+
+Все объёмные модели сделаны в [Blockbench](https://www.blockbench.net/). Их проекты лежат в папке `blockbench/`.
+
+| Йети | Дед Мороз | Камин | Подарок |
+|---|---|---|---|
+| ![](docs/models/yeti.png) | ![](docs/models/ded_moroz.png) | ![](docs/models/fireplace_on.png) | ![](docs/models/template_gift.png) |
+| **Ёлочный шар** | **Сосульки** | **Звезда** | **Камин (не горит)** |
+| ![](docs/models/template_bauble.png) | ![](docs/models/icicle.png) | ![](docs/models/star.png) | ![](docs/models/fireplace.png) |
+
+| Проект | Формат Blockbench | Что получается в моде |
+|---|---|---|
+| `yeti.bbmodel`, `ded_moroz.bbmodel` | Modded Entity (box UV) | `client/render/model/*ModelData.java` + текстура в `textures/entity/` |
+| `fireplace.bbmodel`, `fireplace_on.bbmodel`, `template_gift.bbmodel`, `template_bauble.bbmodel`, `icicle.bbmodel`, `star.bbmodel` | Java Block/Item | `models/block/*.json` |
+
+Анимации мобов (ходьба, удар йети, поворот головы, посох Деда Мороза) задаются в `YetiModel.java` и `DedMorozModel.java`.
+Они обращаются к костям по именам из Blockbench (`head`, `body`, `right_arm`, `left_arm`, `right_leg`, `left_leg`), поэтому эти кости не стоит переименовывать.
 
 ## Мир
 
@@ -145,15 +163,26 @@
 
 Нужна Java 21.
 
+### Как поменять модель
+
+1. Откройте нужный файл из `blockbench/` в Blockbench (приложение или [web.blockbench.net](https://web.blockbench.net/)), отредактируйте и сохраните.
+2. Экспортируйте модель в мод одним из способов:
+   * автоматически: `node tools/blockbench_export.js` (или `node tools/blockbench_export.js yeti`). Скрипт открывает проекты в веб-версии Blockbench, выгружает Java-код и JSON, текстуры мобов и превью в `docs/models/`. Нужны Node.js и Playwright с Chromium;
+   * вручную в Blockbench: для мобов **File → Export → Export Java Entity** (версия «1.17+ Yarn»), затем скопируйте метод `getTexturedModelData()` в соответствующий `*ModelData.java`; для блоков **File → Export → Export Block/Item Model** в `src/main/resources/assets/winter/models/block/`.
+3. `./gradlew build`.
+
 ### Структура проекта
 
 ```
+blockbench/                   проекты моделей Blockbench (.bbmodel): мобы и объёмные блоки
 src/main/java/ru/winter/      общий код: регистрация, блоки, предметы, существа, механики
-src/client/java/ru/winter/    клиент: рендеры и модели мобов, слои рендера, пар изо рта, подсказки
+src/client/java/ru/winter/    клиент: рендеры и анимации мобов, экспорт моделей из Blockbench, пар изо рта, подсказки
 src/gametest/                 игровые тесты и демо-сцена; в jar мода не попадают
 src/main/resources/           ресурсы и данные (сгенерированы скриптами ниже)
 tools/datagen.py              генератор JSON: модели, рецепты, лут, теги, достижения, мировая генерация, переводы
-tools/textures.py             генератор всех текстур (пиксель-арт), с флагом --preview рисует сводную картинку
+tools/textures.py             генератор текстур блоков, предметов и брони (пиксель-арт), --preview рисует сводную картинку
+tools/models.py               создал первые версии проектов Blockbench (геометрия, UV, текстуры мобов)
+tools/blockbench_export.js    экспорт проектов Blockbench в мод
 ```
 
 Если вы поменяли рецепт, перевод или текстуру, отредактируйте скрипт и перезапустите его:
@@ -162,3 +191,5 @@ tools/textures.py             генератор всех текстур (пик
 python3 tools/datagen.py
 python3 tools/textures.py --preview   # нужен Pillow: pip install pillow
 ```
+
+`tools/models.py` перезаписывает проекты в `blockbench/` и поэтому без флага `--force` отказывается работать: после правок в Blockbench источником правды служат сами `.bbmodel`.

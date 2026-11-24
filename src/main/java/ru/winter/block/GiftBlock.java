@@ -36,7 +36,7 @@ import ru.winter.WinterMod;
 public class GiftBlock extends Block {
 	public static final MapCodec<GiftBlock> CODEC = createCodec(GiftBlock::new);
 	public static final RegistryKey<LootTable> GIFT_LOOT = RegistryKey.of(RegistryKeys.LOOT_TABLE, WinterMod.id("gameplay/gift"));
-	private static final VoxelShape SHAPE = Block.createCuboidShape(2.0, 0.0, 2.0, 14.0, 13.0, 14.0);
+	private static final VoxelShape SHAPE = Block.createCuboidShape(1.5, 0.0, 1.5, 14.5, 14.0, 14.5);
 
 	public GiftBlock(Settings settings) {
 		super(settings);

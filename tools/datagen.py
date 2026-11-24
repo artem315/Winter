@@ -187,9 +187,12 @@ def gen_models():
     simple_state("yeti_fur_carpet")
     item_from_block("yeti_fur_carpet")
 
-    cross("icicle")
     cross("festive_spruce_sapling")
-    cross("star")
+    # 3D models made in Blockbench (blockbench/*.bbmodel -> tools/blockbench_export.js)
+    simple_state("icicle")
+    item_generated("icicle", "item/icicle")
+    simple_state("star")
+    item_generated("star", "block/star")
 
     # Garland: a flat plane on the wall, like a ladder.
     block_model("garland", {
@@ -206,63 +209,22 @@ def gen_models():
     blockstate("garland", {"variants": horizontal_variants({"": "garland"})})
     item_generated("garland", "block/garland")
 
-    # Baubles: a small ball on a string hanging from the block above.
-    block_model("template_bauble", {
-        "parent": "minecraft:block/block",
-        "ambientocclusion": False,
-        "textures": {"particle": "#bauble"},
-        "elements": [
-            {"from": [5, 3, 5], "to": [11, 9, 11], "faces": {
-                d: {"uv": [0, 0, 6, 6], "texture": "#bauble"} for d in ("north", "south", "east", "west", "up", "down")}},
-            {"from": [6.5, 9, 6.5], "to": [9.5, 10, 9.5], "faces": {
-                d: {"uv": [7, 0, 10, 1], "texture": "#bauble"} for d in ("north", "south", "east", "west", "up", "down")}},
-            {"from": [7.5, 10, 8], "to": [8.5, 16, 8], "shade": False, "faces": {
-                d: {"uv": [11, 0, 12, 6], "texture": "#bauble"} for d in ("north", "south")}},
-            {"from": [8, 10, 7.5], "to": [8, 16, 8.5], "shade": False, "faces": {
-                d: {"uv": [11, 0, 12, 6], "texture": "#bauble"} for d in ("east", "west")}},
-        ],
-    })
+    # Baubles and gifts: the template models are made in Blockbench, the colours are child models.
     for color in ("red", "gold", "blue"):
         name = f"{color}_bauble"
-        block_model(name, {"parent": m("block/template_bauble"), "textures": {"bauble": m(f"block/{name}")}})
+        block_model(name, {"parent": m("block/template_bauble"),
+                            "textures": {"bauble": m(f"block/{name}"), "particle": m(f"block/{name}")}})
         simple_state(name)
         item_generated(name, f"item/{name}")
 
-    # Gifts: a box with a bow on top. Rows 0-3 of the side texture hold the bow.
-    block_model("template_gift", {
-        "parent": "minecraft:block/block",
-        "textures": {"particle": "#side"},
-        "elements": [
-            {"from": [2, 0, 2], "to": [14, 12, 14], "faces": {
-                "north": {"uv": [2, 4, 14, 16], "texture": "#side"},
-                "south": {"uv": [2, 4, 14, 16], "texture": "#side"},
-                "east": {"uv": [2, 4, 14, 16], "texture": "#side"},
-                "west": {"uv": [2, 4, 14, 16], "texture": "#side"},
-                "up": {"uv": [2, 2, 14, 14], "texture": "#top"},
-                "down": {"uv": [2, 2, 14, 14], "texture": "#top", "cullface": "down"},
-            }},
-            {"from": [4, 12, 8], "to": [12, 16, 8], "shade": False, "faces": {
-                "north": {"uv": [4, 0, 12, 4], "texture": "#side"},
-                "south": {"uv": [4, 0, 12, 4], "texture": "#side"},
-            }},
-            {"from": [8, 12, 4], "to": [8, 16, 12], "shade": False, "faces": {
-                "east": {"uv": [4, 0, 12, 4], "texture": "#side"},
-                "west": {"uv": [4, 0, 12, 4], "texture": "#side"},
-            }},
-        ],
-    })
     for color in ("red", "green", "blue"):
         name = f"{color}_gift"
         block_model(name, {"parent": m("block/template_gift"), "textures": {
-            "side": m(f"block/{name}_side"), "top": m(f"block/{name}_top")}})
+            "side": m(f"block/{name}_side"), "top": m(f"block/{name}_top"), "particle": m(f"block/{name}_side")}})
         simple_state(name)
         item_from_block(name)
 
-    # Fireplace
-    block_model("fireplace", {"parent": "minecraft:block/orientable", "textures": {
-        "top": m("block/fireplace_top"), "front": m("block/fireplace_front"), "side": m("block/fireplace_side")}})
-    block_model("fireplace_on", {"parent": "minecraft:block/orientable", "textures": {
-        "top": m("block/fireplace_top"), "front": m("block/fireplace_front_on"), "side": m("block/fireplace_side")}})
+    # Fireplace: models fireplace / fireplace_on are made in Blockbench
     blockstate("fireplace", {"variants": horizontal_variants({"lit=false": "fireplace", "lit=true": "fireplace_on"})})
     item_from_block("fireplace")
 
@@ -958,11 +920,19 @@ def gen_advancements():
             "stepping_on": {"block": {"blocks": "#minecraft:ice"}}}}]}}})
 
 
+# Block models exported from Blockbench by tools/blockbench_export.js; this script must not touch them.
+BLOCKBENCH_MODELS = {"fireplace", "fireplace_on", "template_gift", "template_bauble", "icicle", "star"}
+
+
 def main():
-    for sub in (os.path.join(ROOT, "data"),
-                asset("blockstates"), asset("models"), asset("lang")):
+    for sub in (os.path.join(ROOT, "data"), asset("blockstates"), asset("models", "item"), asset("lang")):
         if os.path.isdir(sub):
             shutil.rmtree(sub)
+    block_models = asset("models", "block")
+    if os.path.isdir(block_models):
+        for f in os.listdir(block_models):
+            if f[:-len(".json")] not in BLOCKBENCH_MODELS:
+                os.remove(os.path.join(block_models, f))
     gen_models()
     gen_lang()
     gen_recipes()

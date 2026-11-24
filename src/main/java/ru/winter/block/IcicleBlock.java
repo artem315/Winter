@@ -25,7 +25,7 @@ import net.minecraft.world.WorldView;
  */
 public class IcicleBlock extends Block {
 	public static final MapCodec<IcicleBlock> CODEC = createCodec(IcicleBlock::new);
-	private static final VoxelShape SHAPE = Block.createCuboidShape(5.0, 2.0, 5.0, 11.0, 16.0, 11.0);
+	private static final VoxelShape SHAPE = Block.createCuboidShape(2.0, 0.0, 2.0, 14.0, 16.0, 13.0);
 
 	public IcicleBlock(Settings settings) {
 		super(settings);
