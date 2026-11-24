@@ -7,12 +7,8 @@
     "S"
   ],
   "key": {
-    "C": {
-      "item": "winter:frost_crystal"
-    },
-    "S": {
-      "item": "minecraft:stick"
-    }
+    "C": "winter:frost_crystal",
+    "S": "minecraft:stick"
   },
   "result": {
     "id": "winter:frost_shovel",

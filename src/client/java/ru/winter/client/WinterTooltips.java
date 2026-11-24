@@ -1,10 +1,10 @@
 package ru.winter.client;
 
 import net.fabricmc.fabric.api.client.item.v1.ItemTooltipCallback;
-import net.minecraft.client.resource.language.I18n;
-import net.minecraft.registry.Registries;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
+import net.minecraft.ChatFormatting;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.locale.Language;
+import net.minecraft.network.chat.Component;
 import ru.winter.WinterMod;
 
 /**
@@ -18,17 +18,17 @@ public final class WinterTooltips {
 	}
 
 	public static void init() {
-		ItemTooltipCallback.EVENT.register((stack, context, type, lines) -> {
-			if (!WinterMod.MOD_ID.equals(Registries.ITEM.getId(stack.getItem()).getNamespace())) {
+		ItemTooltipCallback.EVENT.register((stack, context, flag, lines) -> {
+			if (!WinterMod.MOD_ID.equals(BuiltInRegistries.ITEM.getKey(stack.getItem()).getNamespace())) {
 				return;
 			}
-			String base = stack.getItem().getTranslationKey() + ".tooltip.";
+			String base = stack.getItem().getDescriptionId() + ".tooltip.";
 			for (int i = 0; i < MAX_LINES; i++) {
 				String key = base + i;
-				if (!I18n.hasTranslation(key)) {
+				if (!Language.getInstance().has(key)) {
 					break;
 				}
-				lines.add(Math.min(lines.size(), 1 + i), Text.translatable(key).formatted(Formatting.GRAY));
+				lines.add(Math.min(lines.size(), 1 + i), Component.translatable(key).withStyle(ChatFormatting.GRAY));
 			}
 		});
 	}

@@ -6,8 +6,9 @@ import java.util.UUID;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.world.GameRules;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.level.gamerules.GameRules;
 import ru.winter.registry.ModEffects;
 import ru.winter.registry.ModGameRules;
 
@@ -28,29 +29,30 @@ public final class FreezingHandler {
 
 	public static void init() {
 		ServerTickEvents.END_SERVER_TICK.register(FreezingHandler::tick);
-		ServerPlayConnectionEvents.DISCONNECT.register((handler, server) -> STATES.remove(handler.getPlayer().getUuid()));
+		ServerPlayConnectionEvents.DISCONNECT.register((listener, server) -> STATES.remove(listener.getPlayer().getUUID()));
 	}
 
 	private static void tick(MinecraftServer server) {
-		for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
+		for (ServerPlayer player : server.getPlayerList().getPlayers()) {
 			tickPlayer(player);
 		}
 	}
 
-	private static void tickPlayer(ServerPlayerEntity player) {
-		GameRules rules = player.getServerWorld().getGameRules();
-		if (!rules.getBoolean(ModGameRules.FREEZING) || player.isCreative() || player.isSpectator() || !player.isAlive()) {
+	private static void tickPlayer(ServerPlayer player) {
+		ServerLevel level = player.level();
+		GameRules rules = level.getGameRules();
+		if (!rules.get(ModGameRules.FREEZING) || player.isCreative() || player.isSpectator() || !player.isAlive()) {
 			return;
 		}
-		State state = STATES.computeIfAbsent(player.getUuid(), uuid -> new State());
-		if ((player.age + player.getId()) % 20 == 0 || state.needsUpdate) {
+		State state = STATES.computeIfAbsent(player.getUUID(), uuid -> new State());
+		if ((player.tickCount + player.getId()) % 20 == 0 || state.needsUpdate) {
 			state.update(player);
 		}
 
-		int frozen = player.getFrozenTicks();
+		int frozen = player.getTicksFrozen();
 		if (state.warm) {
 			if (frozen > 0) {
-				player.setFrozenTicks(Math.max(0, frozen - HEAT_THAW_PER_TICK));
+				player.setTicksFrozen(Math.max(0, frozen - HEAT_THAW_PER_TICK));
 			}
 			return;
 		}
@@ -58,31 +60,23 @@ public final class FreezingHandler {
 			return;
 		}
 
-		boolean damageEnabled = rules.getBoolean(ModGameRules.FREEZING_DAMAGE);
+		boolean damageEnabled = rules.get(ModGameRules.FREEZING_DAMAGE);
 		// Sitting exactly at the freeze threshold after vanilla's -2 per tick means "fully frozen".
-		int cap = damageEnabled ? player.getMinFreezeDamageTicks() + 2 : player.getMinFreezeDamageTicks() - 1;
+		int cap = damageEnabled ? player.getTicksRequiredToFreeze() + 2 : player.getTicksRequiredToFreeze() - 1;
 		// Cancel vanilla thawing (-2 per tick), except in powder snow where vanilla is already freezing us.
-		int keep = player.inPowderSnow ? 0 : 2;
+		int keep = player.isInPowderSnow ? 0 : 2;
 		state.accumulator += state.rate;
 		int add = (int) state.accumulator;
 		state.accumulator -= add;
 		int next = Math.max(frozen, Math.min(frozen + keep + add, cap));
 		if (next != frozen) {
-			player.setFrozenTicks(next);
+			player.setTicksFrozen(next);
 		}
 
 		// Vanilla only hurts entities that "can freeze"; a single leather piece disables that,
 		// so partially dressed players are hurt here instead.
-		if (damageEnabled && player.age % 40 == 0 && player.isFrozen() && !player.canFreeze()) {
-			player.damage(player.getDamageSources().freeze(), 1.0F);
-		}
-	}
-
-	/** Called when something important changes (e.g. armor), to refresh the cached exposure next tick. */
-	public static void invalidate(ServerPlayerEntity player) {
-		State state = STATES.get(player.getUuid());
-		if (state != null) {
-			state.needsUpdate = true;
+		if (damageEnabled && player.tickCount % 40 == 0 && player.isFullyFrozen() && !player.canFreeze()) {
+			player.hurtServer(level, player.damageSources().freeze(), 1.0F);
 		}
 	}
 
@@ -93,9 +87,9 @@ public final class FreezingHandler {
 		float rate;
 		float accumulator;
 
-		void update(ServerPlayerEntity player) {
+		void update(ServerPlayer player) {
 			this.needsUpdate = false;
-			this.warm = player.hasStatusEffect(ModEffects.WARMTH) || ColdExposure.isNearHeat(player.getWorld(), player.getBlockPos());
+			this.warm = player.hasEffect(ModEffects.WARMTH) || ColdExposure.isNearHeat(player.level(), player.blockPosition());
 			float severity = ColdExposure.severity(player);
 			float protection = ColdExposure.insulation(player) / (float) ColdExposure.MAX_INSULATION;
 			this.rate = severity * (1.0F - protection) * BASE_RATE;

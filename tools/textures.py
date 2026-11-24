@@ -1387,6 +1387,27 @@ def mod_icon():
     return s.resize((128, 128), Image.NEAREST)
 
 
+def spawn_egg(base, spots, outline_color):
+    """An egg with spots, in the spirit of the vanilla spawn eggs (each has its own texture since 1.21.5)."""
+    im = new()
+    for y in range(16):
+        for x in range(16):
+            dx, dy = (x + 0.5 - 8) / 5.2, (y + 0.5 - 8.8) / 6.6
+            if dy < 0:
+                dx *= 1.0 + 0.25 * -dy  # narrower top
+            if dx * dx + dy * dy <= 1.0:
+                c = base
+                if dx < -0.35 and dy < -0.2:
+                    c = mix(base, hexc("FFFFFF"), 0.35)
+                elif dx > 0.4 or dy > 0.6:
+                    c = scale(base, 0.85)
+                im.putpixel((x, y), c)
+    for (x, y) in ((6, 5), (7, 5), (10, 7), (10, 8), (5, 9), (6, 9), (8, 11), (9, 11), (8, 12), (11, 11), (7, 3)):
+        if im.getpixel((x, y))[3]:
+            im.putpixel((x, y), spots)
+    return outline(im, outline_color)
+
+
 def preview_sheet():
     cell = 72
     cols = 10
@@ -1411,9 +1432,12 @@ def main():
     gen_items()
     gen_blocks()
     l1, l2, sk = armor_textures()
-    save(l1, "models", "armor", "winter_clothing_layer_1.png")
-    save(l2, "models", "armor", "winter_clothing_layer_2.png")
-    save(sk, "models", "armor", "ice_skates_layer_1.png")
+    # worn armor textures of the equipment assets (assets/winter/equipment/*.json)
+    save(l1, "entity", "equipment", "humanoid", "winter_clothing.png")
+    save(l2, "entity", "equipment", "humanoid_leggings", "winter_clothing.png")
+    save(sk, "entity", "equipment", "humanoid", "ice_skates.png")
+    save(spawn_egg(hexc("EEF6FA"), hexc("6C93B5"), hexc("3E5E78")), "item", "yeti_spawn_egg.png")
+    save(spawn_egg(hexc("C8102E"), hexc("F4F4F4"), hexc("6E0A18")), "item", "ded_moroz_spawn_egg.png")
     save(effect_warmth(), "mob_effect", "warmth.png")
     icon = mod_icon()
     icon_path = os.path.join(OUT, "..", "icon.png")

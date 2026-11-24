@@ -7,15 +7,9 @@
     "SSS"
   ],
   "key": {
-    "B": {
-      "item": "minecraft:bricks"
-    },
-    "C": {
-      "item": "minecraft:campfire"
-    },
-    "S": {
-      "item": "minecraft:stone_bricks"
-    }
+    "B": "minecraft:bricks",
+    "C": "minecraft:campfire",
+    "S": "minecraft:stone_bricks"
   },
   "result": {
     "id": "winter:fireplace",

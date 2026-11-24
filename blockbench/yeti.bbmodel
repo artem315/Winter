@@ -7,7 +7,7 @@
 	"name": "yeti",
 	"model_identifier": "yeti",
 	"modded_entity_entity_class": "",
-	"modded_entity_version": "1.17_yarn",
+	"modded_entity_version": "1.17",
 	"modded_entity_flip_y": true,
 	"visible_box": [
 		1.5,

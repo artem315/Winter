@@ -156,7 +156,7 @@ def entity_model(name, bones, tex_w, tex_h, hitbox, seed):
     return {
         "meta": {"format_version": "4.10", "model_format": "modded_entity", "box_uv": True},
         "name": name, "model_identifier": name, "modded_entity_entity_class": "",
-        "modded_entity_version": "1.17_yarn", "modded_entity_flip_y": True,
+        "modded_entity_version": "1.17", "modded_entity_flip_y": True,
         "visible_box": list(hitbox), "variable_placeholders": "", "variable_placeholder_buttons": [],
         "timeline_setups": [], "unhandled_root_fields": {},
         "resolution": {"width": tex_w, "height": tex_h},

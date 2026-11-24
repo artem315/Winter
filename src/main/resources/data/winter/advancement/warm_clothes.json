@@ -16,14 +16,14 @@
   },
   "criteria": {
     "wear": {
-      "trigger": "minecraft:tick",
+      "trigger": "minecraft:location",
       "conditions": {
         "player": [
           {
             "condition": "minecraft:entity_properties",
             "entity": "this",
             "predicate": {
-              "equipment": {
+              "minecraft:equipment": {
                 "head": {
                   "items": "winter:ushanka"
                 },

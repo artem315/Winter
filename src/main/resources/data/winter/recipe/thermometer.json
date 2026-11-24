@@ -7,12 +7,8 @@
     "G"
   ],
   "key": {
-    "G": {
-      "item": "minecraft:glass"
-    },
-    "R": {
-      "item": "minecraft:redstone"
-    }
+    "G": "minecraft:glass",
+    "R": "minecraft:redstone"
   },
   "result": {
     "id": "winter:thermometer",

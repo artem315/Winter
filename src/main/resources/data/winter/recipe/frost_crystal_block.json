@@ -7,9 +7,7 @@
     "###"
   ],
   "key": {
-    "#": {
-      "item": "winter:frost_crystal"
-    }
+    "#": "winter:frost_crystal"
   },
   "result": {
     "id": "winter:frost_crystal_block",

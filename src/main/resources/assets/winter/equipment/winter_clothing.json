@@ -1,0 +1,14 @@
+{
+  "layers": {
+    "humanoid": [
+      {
+        "texture": "winter:winter_clothing"
+      }
+    ],
+    "humanoid_leggings": [
+      {
+        "texture": "winter:winter_clothing"
+      }
+    ]
+  }
+}

@@ -1,9 +1,7 @@
 {
   "type": "minecraft:smoking",
   "category": "food",
-  "ingredient": {
-    "item": "winter:raw_pelmeni"
-  },
+  "ingredient": "winter:raw_pelmeni",
   "result": {
     "id": "winter:pelmeni"
   },

@@ -1,10 +1,10 @@
 package ru.winter.client;
 
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.network.AbstractClientPlayerEntity;
-import net.minecraft.client.world.ClientWorld;
-import net.minecraft.particle.ParticleTypes;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.phys.Vec3;
 import ru.winter.mechanic.ColdExposure;
 
 /** Purely cosmetic: players breathe out little clouds of vapour in the cold. */
@@ -12,22 +12,22 @@ public final class FrostyBreath {
 	private FrostyBreath() {
 	}
 
-	public static void tick(ClientWorld world) {
-		MinecraftClient client = MinecraftClient.getInstance();
-		for (AbstractClientPlayerEntity player : world.getPlayers()) {
-			if ((player.age + player.getId() * 7) % 50 != 0 || player.isInvisible() || player.isSubmergedInWater()) {
+	public static void tick(ClientLevel level) {
+		Minecraft minecraft = Minecraft.getInstance();
+		for (Player player : level.players()) {
+			if ((player.tickCount + player.getId() * 7) % 50 != 0 || player.isInvisible() || player.isUnderWater()) {
 				continue;
 			}
-			boolean firstPerson = player == client.getCameraEntity() && client.options.getPerspective().isFirstPerson();
-			if (firstPerson || !ColdExposure.isColdAt(world, player.getBlockPos())) {
+			boolean firstPerson = player == minecraft.getCameraEntity() && minecraft.options.getCameraType().isFirstPerson();
+			if (firstPerson || !ColdExposure.isColdAt(level, player.blockPosition())) {
 				continue;
 			}
-			Vec3d look = player.getRotationVec(1.0F);
+			Vec3 look = player.getViewVector(1.0F);
 			double x = player.getX() + look.x * 0.4;
 			double y = player.getEyeY() - 0.15;
 			double z = player.getZ() + look.z * 0.4;
 			for (int i = 0; i < 3; i++) {
-				world.addParticle(ParticleTypes.WHITE_SMOKE, x, y, z, look.x * 0.02, 0.01, look.z * 0.02);
+				level.addParticle(ParticleTypes.WHITE_SMOKE, x, y, z, look.x * 0.02, 0.01, look.z * 0.02);
 			}
 		}
 	}

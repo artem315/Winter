@@ -6,18 +6,10 @@
     "SSS"
   ],
   "key": {
-    "R": {
-      "item": "minecraft:red_dye"
-    },
-    "G": {
-      "item": "minecraft:glowstone_dust"
-    },
-    "B": {
-      "item": "minecraft:blue_dye"
-    },
-    "S": {
-      "item": "minecraft:string"
-    }
+    "R": "minecraft:red_dye",
+    "G": "minecraft:glowstone_dust",
+    "B": "minecraft:blue_dye",
+    "S": "minecraft:string"
   },
   "result": {
     "id": "winter:garland",

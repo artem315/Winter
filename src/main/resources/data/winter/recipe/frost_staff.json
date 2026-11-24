@@ -7,15 +7,9 @@
     "B  "
   ],
   "key": {
-    "F": {
-      "item": "winter:frost_crystal_block"
-    },
-    "D": {
-      "item": "minecraft:diamond"
-    },
-    "B": {
-      "item": "minecraft:blaze_rod"
-    }
+    "F": "winter:frost_crystal_block",
+    "D": "minecraft:diamond",
+    "B": "minecraft:blaze_rod"
   },
   "result": {
     "id": "winter:frost_staff",

@@ -2,18 +2,10 @@
   "type": "minecraft:crafting_shapeless",
   "category": "misc",
   "ingredients": [
-    {
-      "item": "minecraft:wheat"
-    },
-    {
-      "item": "minecraft:wheat"
-    },
-    {
-      "item": "minecraft:egg"
-    },
-    {
-      "item": "minecraft:porkchop"
-    }
+    "minecraft:wheat",
+    "minecraft:wheat",
+    "minecraft:egg",
+    "minecraft:porkchop"
   ],
   "result": {
     "id": "winter:raw_pelmeni",

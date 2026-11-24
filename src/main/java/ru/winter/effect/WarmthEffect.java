@@ -1,27 +1,28 @@
 package ru.winter.effect;
 
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.effect.StatusEffect;
-import net.minecraft.entity.effect.StatusEffectCategory;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.effect.MobEffect;
+import net.minecraft.world.effect.MobEffectCategory;
+import net.minecraft.world.entity.LivingEntity;
 
 /**
  * Warmth: the entity does not get colder and slowly thaws.
  * The freezing handler additionally treats it as full insulation.
  */
-public class WarmthEffect extends StatusEffect {
+public class WarmthEffect extends MobEffect {
 	public WarmthEffect() {
-		super(StatusEffectCategory.BENEFICIAL, 0xFF9A3C);
+		super(MobEffectCategory.BENEFICIAL, 0xFF9A3C);
 	}
 
 	@Override
-	public boolean canApplyUpdateEffect(int duration, int amplifier) {
+	public boolean shouldApplyEffectTickThisTick(int tickCount, int amplification) {
 		return true;
 	}
 
 	@Override
-	public boolean applyUpdateEffect(LivingEntity entity, int amplifier) {
-		if (!entity.getWorld().isClient && entity.getFrozenTicks() > 0) {
-			entity.setFrozenTicks(Math.max(0, entity.getFrozenTicks() - (2 + amplifier)));
+	public boolean applyEffectTick(ServerLevel level, LivingEntity mob, int amplification) {
+		if (mob.getTicksFrozen() > 0) {
+			mob.setTicksFrozen(Math.max(0, mob.getTicksFrozen() - (2 + amplification)));
 		}
 		return true;
 	}

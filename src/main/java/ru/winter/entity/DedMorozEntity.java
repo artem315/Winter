@@ -1,77 +1,74 @@
 package ru.winter.entity;
 
-import net.minecraft.entity.EntityData;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.SpawnReason;
-import net.minecraft.entity.ai.goal.EscapeDangerGoal;
-import net.minecraft.entity.ai.goal.FleeEntityGoal;
-import net.minecraft.entity.ai.goal.GoToWalkTargetGoal;
-import net.minecraft.entity.ai.goal.LookAtCustomerGoal;
-import net.minecraft.entity.ai.goal.LookAtEntityGoal;
-import net.minecraft.entity.ai.goal.StopFollowingCustomerGoal;
-import net.minecraft.entity.ai.goal.SwimGoal;
-import net.minecraft.entity.ai.goal.WanderAroundFarGoal;
-import net.minecraft.entity.mob.MobEntity;
-import net.minecraft.entity.mob.ZombieEntity;
-import net.minecraft.entity.mob.IllagerEntity;
-import net.minecraft.entity.mob.VexEntity;
-import net.minecraft.entity.passive.WanderingTraderEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.particle.ParticleTypes;
-import net.minecraft.village.TradeOfferList;
-import net.minecraft.world.LocalDifficulty;
-import net.minecraft.world.ServerWorldAccess;
-import net.minecraft.world.World;
-import org.jetbrains.annotations.Nullable;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.DifficultyInstance;
+import net.minecraft.world.entity.EntitySpawnReason;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.SpawnGroupData;
+import net.minecraft.world.entity.ai.goal.AvoidEntityGoal;
+import net.minecraft.world.entity.ai.goal.FloatGoal;
+import net.minecraft.world.entity.ai.goal.InteractGoal;
+import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
+import net.minecraft.world.entity.ai.goal.LookAtTradingPlayerGoal;
+import net.minecraft.world.entity.ai.goal.MoveTowardsRestrictionGoal;
+import net.minecraft.world.entity.ai.goal.PanicGoal;
+import net.minecraft.world.entity.ai.goal.TradeWithPlayerGoal;
+import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal;
+import net.minecraft.world.entity.monster.illager.AbstractIllager;
+import net.minecraft.world.entity.monster.zombie.Zombie;
+import net.minecraft.world.entity.npc.wanderingtrader.WanderingTrader;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.ServerLevelAccessor;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Ded Moroz (Father Frost): a rare festive trader wandering through snowy biomes.
  * Sells New Year treats, decorations, gifts and his magic frost staff.
  * Naturally spawned ones leave after about two in-game days; ones from spawn eggs stay.
  */
-public class DedMorozEntity extends WanderingTraderEntity {
-	public DedMorozEntity(EntityType<? extends WanderingTraderEntity> type, World world) {
-		super(type, world);
+public class DedMorozEntity extends WanderingTrader {
+	public DedMorozEntity(EntityType<? extends WanderingTrader> type, Level level) {
+		super(type, level);
 	}
 
 	@Override
-	protected void initGoals() {
-		this.goalSelector.add(0, new SwimGoal(this));
-		this.goalSelector.add(1, new StopFollowingCustomerGoal(this));
-		this.goalSelector.add(1, new FleeEntityGoal<>(this, ZombieEntity.class, 8.0F, 0.5, 0.5));
-		this.goalSelector.add(1, new FleeEntityGoal<>(this, IllagerEntity.class, 12.0F, 0.5, 0.5));
-		this.goalSelector.add(1, new FleeEntityGoal<>(this, VexEntity.class, 8.0F, 0.5, 0.5));
-		this.goalSelector.add(1, new EscapeDangerGoal(this, 0.5));
-		this.goalSelector.add(1, new LookAtCustomerGoal(this));
-		this.goalSelector.add(4, new GoToWalkTargetGoal(this, 0.35));
-		this.goalSelector.add(8, new WanderAroundFarGoal(this, 0.35));
-		this.goalSelector.add(9, new LookAtEntityGoal(this, PlayerEntity.class, 3.0F, 1.0F));
-		this.goalSelector.add(10, new LookAtEntityGoal(this, MobEntity.class, 8.0F));
+	protected void registerGoals() {
+		this.goalSelector.addGoal(0, new FloatGoal(this));
+		this.goalSelector.addGoal(1, new TradeWithPlayerGoal(this));
+		this.goalSelector.addGoal(1, new AvoidEntityGoal<>(this, Zombie.class, 8.0F, 0.5, 0.5));
+		this.goalSelector.addGoal(1, new AvoidEntityGoal<>(this, AbstractIllager.class, 12.0F, 0.5, 0.5));
+		this.goalSelector.addGoal(1, new PanicGoal(this, 0.5));
+		this.goalSelector.addGoal(1, new LookAtTradingPlayerGoal(this));
+		this.goalSelector.addGoal(4, new MoveTowardsRestrictionGoal(this, 0.35));
+		this.goalSelector.addGoal(8, new WaterAvoidingRandomStrollGoal(this, 0.35));
+		this.goalSelector.addGoal(9, new InteractGoal(this, Player.class, 3.0F, 1.0F));
+		this.goalSelector.addGoal(10, new LookAtPlayerGoal(this, Mob.class, 8.0F));
 	}
 
 	@Override
-	protected void fillRecipes() {
-		TradeOfferList offers = this.getOffers();
-		this.fillRecipesFromPool(offers, DedMorozTrades.COMMON, 6);
-		this.fillRecipesFromPool(offers, DedMorozTrades.RARE, 2);
+	protected void updateTrades(ServerLevel level) {
+		DedMorozTrades.addRandom(level, this.getOffers(), DedMorozTrades.COMMON, 6);
+		DedMorozTrades.addRandom(level, this.getOffers(), DedMorozTrades.RARE, 2);
 	}
 
-	@Nullable
 	@Override
-	public EntityData initialize(ServerWorldAccess world, LocalDifficulty difficulty, SpawnReason spawnReason, @Nullable EntityData entityData) {
-		if (spawnReason == SpawnReason.NATURAL || spawnReason == SpawnReason.CHUNK_GENERATION) {
+	public @Nullable SpawnGroupData finalizeSpawn(ServerLevelAccessor level, DifficultyInstance difficulty, EntitySpawnReason spawnReason,
+		@Nullable SpawnGroupData groupData) {
+		if (spawnReason == EntitySpawnReason.NATURAL || spawnReason == EntitySpawnReason.CHUNK_GENERATION) {
 			this.setDespawnDelay(48000);
 		}
-		this.setPersistent();
-		return super.initialize(world, difficulty, spawnReason, entityData);
+		this.setPersistenceRequired();
+		return super.finalizeSpawn(level, difficulty, spawnReason, groupData);
 	}
 
 	@Override
-	public void tickMovement() {
-		super.tickMovement();
-		if (this.getWorld().isClient && this.random.nextInt(8) == 0) {
-			this.getWorld().addParticle(ParticleTypes.SNOWFLAKE,
-				this.getParticleX(0.6), this.getRandomBodyY(), this.getParticleZ(0.6), 0.0, -0.02, 0.0);
+	public void aiStep() {
+		super.aiStep();
+		if (this.level().isClientSide() && this.random.nextInt(8) == 0) {
+			this.level().addParticle(ParticleTypes.SNOWFLAKE, this.getRandomX(0.6), this.getRandomY(), this.getRandomZ(0.6), 0.0, -0.02, 0.0);
 		}
 	}
 }

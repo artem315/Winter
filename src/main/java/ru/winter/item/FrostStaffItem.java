@@ -1,16 +1,15 @@
 package ru.winter.item;
 
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.stat.Stats;
-import net.minecraft.util.Hand;
-import net.minecraft.util.Rarity;
-import net.minecraft.util.TypedActionResult;
-import net.minecraft.world.World;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.stats.Stats;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 import ru.winter.entity.IceBallEntity;
 import ru.winter.registry.ModItems;
 
@@ -19,30 +18,29 @@ import ru.winter.registry.ModItems;
  * and turn water into ice on impact.
  */
 public class FrostStaffItem extends Item {
-	public FrostStaffItem(Settings settings) {
-		super(settings.rarity(Rarity.EPIC));
+	public FrostStaffItem(Properties properties) {
+		super(properties);
 	}
 
 	@Override
-	public TypedActionResult<ItemStack> use(World world, PlayerEntity user, Hand hand) {
-		ItemStack stack = user.getStackInHand(hand);
-		world.playSound(null, user.getX(), user.getY(), user.getZ(), SoundEvents.ENTITY_PLAYER_HURT_FREEZE, SoundCategory.PLAYERS, 0.8F, 1.6F);
-		world.playSound(null, user.getX(), user.getY(), user.getZ(), SoundEvents.BLOCK_AMETHYST_BLOCK_CHIME, SoundCategory.PLAYERS, 1.0F, 0.6F);
-		if (!world.isClient) {
-			IceBallEntity bolt = new IceBallEntity(world, user);
-			bolt.setItem(new ItemStack(ModItems.FROST_CRYSTAL));
+	public InteractionResult use(Level level, Player player, InteractionHand hand) {
+		ItemStack stack = player.getItemInHand(hand);
+		level.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.PLAYER_HURT_FREEZE, SoundSource.PLAYERS, 0.8F, 1.6F);
+		level.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.AMETHYST_BLOCK_CHIME, SoundSource.PLAYERS, 1.0F, 0.6F);
+		if (level instanceof ServerLevel) {
+			IceBallEntity bolt = new IceBallEntity(level, player, new ItemStack(ModItems.FROST_CRYSTAL));
 			bolt.setPowered(true);
-			bolt.setVelocity(user, user.getPitch(), user.getYaw(), 0.0F, 2.0F, 0.3F);
-			world.spawnEntity(bolt);
-			stack.damage(1, user, LivingEntity.getSlotForHand(hand));
+			bolt.shootFromRotation(player, player.getXRot(), player.getYRot(), 0.0F, 2.0F, 0.3F);
+			level.addFreshEntity(bolt);
+			stack.hurtAndBreak(1, player, hand);
 		}
-		user.getItemCooldownManager().set(this, 15);
-		user.incrementStat(Stats.USED.getOrCreateStat(this));
-		return TypedActionResult.success(stack, world.isClient());
+		player.getCooldowns().addCooldown(stack, 15);
+		player.awardStat(Stats.ITEM_USED.get(this));
+		return InteractionResult.SUCCESS;
 	}
 
 	@Override
-	public boolean hasGlint(ItemStack stack) {
+	public boolean isFoil(ItemStack itemStack) {
 		return true;
 	}
 }

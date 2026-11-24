@@ -7,12 +7,8 @@
     "###"
   ],
   "key": {
-    "#": {
-      "item": "minecraft:glass"
-    },
-    "S": {
-      "item": "minecraft:snowball"
-    }
+    "#": "minecraft:glass",
+    "S": "minecraft:snowball"
   },
   "result": {
     "id": "winter:frosted_glass",

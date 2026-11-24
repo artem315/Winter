@@ -1,11 +1,10 @@
 package ru.winter.registry;
 
-import net.minecraft.block.Block;
-import net.minecraft.entity.EntityType;
-import net.minecraft.item.Item;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.registry.tag.TagKey;
-import net.minecraft.world.biome.Biome;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.level.biome.Biome;
+import net.minecraft.world.level.block.Block;
 import ru.winter.WinterMod;
 
 public final class ModTags {
@@ -18,7 +17,7 @@ public final class ModTags {
 		public static final TagKey<Block> SKATING_SURFACES = of("skating_surfaces");
 
 		private static TagKey<Block> of(String path) {
-			return TagKey.of(RegistryKeys.BLOCK, WinterMod.id(path));
+			return TagKey.create(Registries.BLOCK, WinterMod.id(path));
 		}
 	}
 
@@ -27,9 +26,11 @@ public final class ModTags {
 		public static final TagKey<Item> STRONG_INSULATION = of("insulation/strong");
 		/** Leather-like clothing: 1 insulation point per piece. */
 		public static final TagKey<Item> LIGHT_INSULATION = of("insulation/light");
+		/** Repair material of frost crystal tools. */
+		public static final TagKey<Item> REPAIRS_FROST_TOOLS = of("repairs_frost_tools");
 
 		private static TagKey<Item> of(String path) {
-			return TagKey.of(RegistryKeys.ITEM, WinterMod.id(path));
+			return TagKey.create(Registries.ITEM, WinterMod.id(path));
 		}
 	}
 
@@ -41,13 +42,7 @@ public final class ModTags {
 		public static final TagKey<Biome> SPAWNS_DED_MOROZ = of("spawns_ded_moroz");
 
 		private static TagKey<Biome> of(String path) {
-			return TagKey.of(RegistryKeys.BIOME, WinterMod.id(path));
-		}
-	}
-
-	public static final class EntityTypes {
-		private static TagKey<EntityType<?>> of(String path) {
-			return TagKey.of(RegistryKeys.ENTITY_TYPE, WinterMod.id(path));
+			return TagKey.create(Registries.BIOME, WinterMod.id(path));
 		}
 	}
 

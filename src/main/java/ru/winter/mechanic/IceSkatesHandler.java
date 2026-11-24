@@ -1,13 +1,13 @@
 package ru.winter.mechanic;
 
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
-import net.minecraft.entity.EquipmentSlot;
-import net.minecraft.entity.attribute.EntityAttributeInstance;
-import net.minecraft.entity.attribute.EntityAttributeModifier;
-import net.minecraft.entity.attribute.EntityAttributes;
-import net.minecraft.particle.ParticleTypes;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.Identifier;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.resources.Identifier;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.ai.attributes.AttributeInstance;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import ru.winter.WinterMod;
 import ru.winter.registry.ModItems;
 import ru.winter.registry.ModTags;
@@ -15,52 +15,51 @@ import ru.winter.registry.ModTags;
 /** Ice skates make the player much faster on ice. */
 public final class IceSkatesHandler {
 	private static final Identifier SKATING_SPEED = WinterMod.id("ice_skating");
-	private static final EntityAttributeModifier SKATING_MODIFIER =
-		new EntityAttributeModifier(SKATING_SPEED, 0.6, EntityAttributeModifier.Operation.ADD_MULTIPLIED_BASE);
+	private static final AttributeModifier SKATING_MODIFIER =
+		new AttributeModifier(SKATING_SPEED, 0.6, AttributeModifier.Operation.ADD_MULTIPLIED_BASE);
 
 	private IceSkatesHandler() {
 	}
 
 	public static void init() {
 		ServerTickEvents.END_SERVER_TICK.register(server -> {
-			for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
+			for (ServerPlayer player : server.getPlayerList().getPlayers()) {
 				tickPlayer(player);
 			}
 		});
 	}
 
-	private static void tickPlayer(ServerPlayerEntity player) {
-		EntityAttributeInstance speed = player.getAttributeInstance(EntityAttributes.GENERIC_MOVEMENT_SPEED);
+	private static void tickPlayer(ServerPlayer player) {
+		AttributeInstance speed = player.getAttribute(Attributes.MOVEMENT_SPEED);
 		if (speed == null) {
 			return;
 		}
-		boolean wearing = player.getEquippedStack(EquipmentSlot.FEET).isOf(ModItems.ICE_SKATES);
+		boolean wearing = player.getItemBySlot(EquipmentSlot.FEET).is(ModItems.ICE_SKATES);
 		boolean active = speed.hasModifier(SKATING_SPEED);
 		boolean skating;
 		if (!wearing || player.isSpectator()) {
 			skating = false;
-		} else if (player.isOnGround()) {
-			skating = player.getWorld().getBlockState(player.getVelocityAffectingPos()).isIn(ModTags.Blocks.SKATING_SURFACES);
+		} else if (player.onGround()) {
+			skating = player.level().getBlockState(player.getBlockPosBelowThatAffectsMyMovement()).is(ModTags.Blocks.SKATING_SURFACES);
 		} else {
 			skating = active; // keep the speed while jumping
 		}
 
 		if (skating && !active) {
-			speed.addTemporaryModifier(SKATING_MODIFIER);
+			speed.addTransientModifier(SKATING_MODIFIER);
 		} else if (!skating && active) {
 			speed.removeModifier(SKATING_SPEED);
 		}
 
-		if (skating && player.isOnGround() && player.age % 3 == 0 && moved(player)) {
-			player.getServerWorld().spawnParticles(ParticleTypes.SNOWFLAKE, player.getX(), player.getY() + 0.05, player.getZ(),
-				1, 0.15, 0.0, 0.15, 0.01);
+		if (skating && player.onGround() && player.tickCount % 3 == 0 && moved(player)) {
+			player.level().sendParticles(ParticleTypes.SNOWFLAKE, player.getX(), player.getY() + 0.05, player.getZ(), 1, 0.15, 0.0, 0.15, 0.01);
 		}
 	}
 
 	/** Server-side player velocity is not reliable (movement is client-driven), so use the position delta. */
-	private static boolean moved(ServerPlayerEntity player) {
-		double dx = player.getX() - player.prevX;
-		double dz = player.getZ() - player.prevZ;
+	private static boolean moved(ServerPlayer player) {
+		double dx = player.getX() - player.xo;
+		double dz = player.getZ() - player.zo;
 		return dx * dx + dz * dz > 0.01;
 	}
 }

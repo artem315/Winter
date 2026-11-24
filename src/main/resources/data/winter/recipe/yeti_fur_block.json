@@ -6,9 +6,7 @@
     "##"
   ],
   "key": {
-    "#": {
-      "item": "winter:yeti_fur"
-    }
+    "#": "winter:yeti_fur"
   },
   "result": {
     "id": "winter:yeti_fur_block",

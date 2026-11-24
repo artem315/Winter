@@ -6,9 +6,7 @@
     "#"
   ],
   "key": {
-    "#": {
-      "item": "winter:ice_brick_slab"
-    }
+    "#": "winter:ice_brick_slab"
   },
   "result": {
     "id": "winter:chiseled_ice_bricks",

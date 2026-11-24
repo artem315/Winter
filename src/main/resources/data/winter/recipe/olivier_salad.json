@@ -2,21 +2,11 @@
   "type": "minecraft:crafting_shapeless",
   "category": "misc",
   "ingredients": [
-    {
-      "item": "minecraft:bowl"
-    },
-    {
-      "item": "minecraft:baked_potato"
-    },
-    {
-      "item": "minecraft:carrot"
-    },
-    {
-      "item": "minecraft:egg"
-    },
-    {
-      "item": "minecraft:cooked_chicken"
-    }
+    "minecraft:bowl",
+    "minecraft:baked_potato",
+    "minecraft:carrot",
+    "minecraft:egg",
+    "minecraft:cooked_chicken"
   ],
   "result": {
     "id": "winter:olivier_salad",

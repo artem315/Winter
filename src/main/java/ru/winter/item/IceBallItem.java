@@ -1,47 +1,43 @@
 package ru.winter.item;
 
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.projectile.ProjectileEntity;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.ProjectileItem;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.stat.Stats;
-import net.minecraft.util.Hand;
-import net.minecraft.util.TypedActionResult;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.Position;
-import net.minecraft.world.World;
+import net.minecraft.core.Direction;
+import net.minecraft.core.Position;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.stats.Stats;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.entity.projectile.Projectile;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ProjectileItem;
+import net.minecraft.world.level.Level;
 import ru.winter.entity.IceBallEntity;
 
 /** "Ледышка" — a hard-packed icy snowball that actually hurts. Can be fired from dispensers. */
 public class IceBallItem extends Item implements ProjectileItem {
-	public IceBallItem(Item.Settings settings) {
-		super(settings);
+	public IceBallItem(Item.Properties properties) {
+		super(properties);
 	}
 
 	@Override
-	public TypedActionResult<ItemStack> use(World world, PlayerEntity user, Hand hand) {
-		ItemStack stack = user.getStackInHand(hand);
-		world.playSound(null, user.getX(), user.getY(), user.getZ(), SoundEvents.ENTITY_SNOWBALL_THROW, SoundCategory.NEUTRAL,
-			0.5F, 0.4F / (world.getRandom().nextFloat() * 0.4F + 0.8F));
-		if (!world.isClient) {
-			IceBallEntity ball = new IceBallEntity(world, user);
-			ball.setItem(stack);
-			ball.setVelocity(user, user.getPitch(), user.getYaw(), 0.0F, 1.6F, 1.0F);
-			world.spawnEntity(ball);
+	public InteractionResult use(Level level, Player player, InteractionHand hand) {
+		ItemStack stack = player.getItemInHand(hand);
+		level.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.SNOWBALL_THROW, SoundSource.NEUTRAL,
+			0.5F, 0.4F / (level.getRandom().nextFloat() * 0.4F + 0.8F));
+		if (level instanceof ServerLevel serverLevel) {
+			Projectile.spawnProjectileFromRotation(IceBallEntity::new, serverLevel, stack, player, 0.0F, 1.6F, 1.0F);
 		}
-		user.getItemCooldownManager().set(this, 8);
-		user.incrementStat(Stats.USED.getOrCreateStat(this));
-		stack.decrementUnlessCreative(1, user);
-		return TypedActionResult.success(stack, world.isClient());
+		player.getCooldowns().addCooldown(stack, 8);
+		player.awardStat(Stats.ITEM_USED.get(this));
+		stack.consume(1, player);
+		return InteractionResult.SUCCESS;
 	}
 
 	@Override
-	public ProjectileEntity createEntity(World world, Position pos, ItemStack stack, Direction direction) {
-		IceBallEntity ball = new IceBallEntity(world, pos.getX(), pos.getY(), pos.getZ());
-		ball.setItem(stack);
-		return ball;
+	public Projectile asProjectile(Level level, Position position, ItemStack itemStack, Direction direction) {
+		return new IceBallEntity(level, position.x(), position.y(), position.z(), itemStack);
 	}
 }

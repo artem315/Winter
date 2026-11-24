@@ -16,19 +16,19 @@
   },
   "criteria": {
     "skate": {
-      "trigger": "minecraft:tick",
+      "trigger": "minecraft:location",
       "conditions": {
         "player": [
           {
             "condition": "minecraft:entity_properties",
             "entity": "this",
             "predicate": {
-              "equipment": {
+              "minecraft:equipment": {
                 "feet": {
                   "items": "winter:ice_skates"
                 }
               },
-              "stepping_on": {
+              "minecraft:stepping_on": {
                 "block": {
                   "blocks": "#minecraft:ice"
                 }

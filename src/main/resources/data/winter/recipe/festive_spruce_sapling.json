@@ -2,15 +2,9 @@
   "type": "minecraft:crafting_shapeless",
   "category": "misc",
   "ingredients": [
-    {
-      "item": "minecraft:spruce_sapling"
-    },
-    {
-      "item": "minecraft:glowstone_dust"
-    },
-    {
-      "item": "minecraft:snowball"
-    }
+    "minecraft:spruce_sapling",
+    "minecraft:glowstone_dust",
+    "minecraft:snowball"
   ],
   "result": {
     "id": "winter:festive_spruce_sapling",

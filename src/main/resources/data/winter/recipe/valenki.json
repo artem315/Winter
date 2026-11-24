@@ -6,9 +6,7 @@
     "W W"
   ],
   "key": {
-    "W": {
-      "tag": "minecraft:wool"
-    }
+    "W": "#minecraft:wool"
   },
   "result": {
     "id": "winter:valenki",

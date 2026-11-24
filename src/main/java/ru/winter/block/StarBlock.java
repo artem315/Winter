@@ -1,63 +1,62 @@
 package ru.winter.block;
 
 import com.mojang.serialization.MapCodec;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.block.ShapeContext;
-import net.minecraft.particle.ParticleTypes;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.random.Random;
-import net.minecraft.util.shape.VoxelShape;
-import net.minecraft.world.BlockView;
-import net.minecraft.world.World;
-import net.minecraft.world.WorldAccess;
-import net.minecraft.world.WorldView;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.ScheduledTickAccess;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.VoxelShape;
 
 /**
  * The bright star for the top of a Christmas tree.
  */
 public class StarBlock extends Block {
-	public static final MapCodec<StarBlock> CODEC = createCodec(StarBlock::new);
-	private static final VoxelShape SHAPE = Block.createCuboidShape(3.0, 0.0, 3.0, 13.0, 15.0, 13.0);
+	public static final MapCodec<StarBlock> CODEC = simpleCodec(StarBlock::new);
+	private static final VoxelShape SHAPE = Block.box(3.0, 0.0, 3.0, 13.0, 15.0, 13.0);
 
-	public StarBlock(Settings settings) {
-		super(settings);
+	public StarBlock(Properties properties) {
+		super(properties);
 	}
 
 	@Override
-	protected MapCodec<? extends Block> getCodec() {
+	protected MapCodec<? extends Block> codec() {
 		return CODEC;
 	}
 
 	@Override
-	protected VoxelShape getOutlineShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context) {
+	protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
 		return SHAPE;
 	}
 
 	@Override
-	protected boolean canPlaceAt(BlockState state, WorldView world, BlockPos pos) {
-		return Block.sideCoversSmallSquare(world, pos.down(), Direction.UP);
+	protected boolean canSurvive(BlockState state, LevelReader level, BlockPos pos) {
+		return Block.canSupportCenter(level, pos.below(), Direction.UP);
 	}
 
 	@Override
-	protected BlockState getStateForNeighborUpdate(
-		BlockState state, Direction direction, BlockState neighborState, WorldAccess world, BlockPos pos, BlockPos neighborPos
-	) {
-		if (direction == Direction.DOWN && !state.canPlaceAt(world, pos)) {
-			return Blocks.AIR.getDefaultState();
+	protected BlockState updateShape(BlockState state, LevelReader level, ScheduledTickAccess ticks, BlockPos pos, Direction direction,
+		BlockPos neighbourPos, BlockState neighbourState, RandomSource random) {
+		if (direction == Direction.DOWN && !state.canSurvive(level, pos)) {
+			return Blocks.AIR.defaultBlockState();
 		}
-		return super.getStateForNeighborUpdate(state, direction, neighborState, world, pos, neighborPos);
+		return super.updateShape(state, level, ticks, pos, direction, neighbourPos, neighbourState, random);
 	}
 
 	@Override
-	public void randomDisplayTick(BlockState state, World world, BlockPos pos, Random random) {
+	public void animateTick(BlockState state, Level level, BlockPos pos, RandomSource random) {
 		if (random.nextInt(3) == 0) {
 			double x = pos.getX() + 0.5 + (random.nextDouble() - 0.5) * 0.8;
 			double y = pos.getY() + 0.5 + (random.nextDouble() - 0.5) * 0.8;
 			double z = pos.getZ() + 0.5 + (random.nextDouble() - 0.5) * 0.8;
-			world.addParticle(ParticleTypes.END_ROD, x, y, z, 0.0, 0.005, 0.0);
+			level.addParticle(ParticleTypes.END_ROD, x, y, z, 0.0, 0.005, 0.0);
 		}
 	}
 }

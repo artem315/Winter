@@ -7,7 +7,7 @@
 	"name": "ded_moroz",
 	"model_identifier": "ded_moroz",
 	"modded_entity_entity_class": "",
-	"modded_entity_version": "1.17_yarn",
+	"modded_entity_version": "1.17",
 	"modded_entity_flip_y": true,
 	"visible_box": [
 		0.7,

@@ -7,8 +7,9 @@
 
 | | |
 |---|---|
-| **Minecraft** | 1.21.1 |
-| **Загрузчик** | Fabric Loader ≥ 0.16 |
+| **Minecraft** | 26.2 |
+| **Загрузчик** | Fabric Loader ≥ 0.20.1 |
+| **Java** | 25 |
 | **Зависимости** | [Fabric API](https://modrinth.com/mod/fabric-api) |
 | **Языки** | русский, английский |
 
@@ -22,9 +23,11 @@
 
 ## Установка
 
-1. Установите [Fabric Loader](https://fabricmc.net/use/installer/) для Minecraft 1.21.1.
-2. Положите в папку `mods` файл `winter-1.0.0.jar` и Fabric API.
+1. Установите [Fabric Loader](https://fabricmc.net/use/installer/) для Minecraft 26.2.
+2. Положите в папку `mods` файл `winter-2.0.0.jar` и Fabric API для 26.2.
 3. Запустите игру с профилем Fabric. Все предметы мода собраны во вкладке творческого режима **«Зима»**.
+
+Версия для Minecraft 1.21.1 (1.0.0) больше не поддерживается. Она осталась в истории git, в коммите `4e547a5`.
 
 ---
 
@@ -53,8 +56,8 @@
 
 | Правило | По умолчанию | Что делает |
 |---|---|---|
-| `/gamerule winterFreezing` | `true` | включает замерзание в холодных биомах |
-| `/gamerule winterFreezingDamage` | `true` | наносит ли полное замерзание урон |
+| `/gamerule winter:freezing` | `true` | включает замерзание в холодных биомах |
+| `/gamerule winter:freezing_damage` | `true` | наносит ли полное замерзание урон |
 
 ---
 
@@ -155,20 +158,20 @@
 ## Для разработчиков
 
 ```bash
-./gradlew build          # собрать мод → build/libs/winter-1.0.0.jar
-./gradlew runClient      # запустить игру с модом
-./gradlew runGametest    # headless-сервер с игровыми тестами (заморозка, подарки, рост ёлки, генерация мира, лут)
-./gradlew runShowcase    # клиент сам строит демо-сцену и сохраняет скриншоты в build/showcase/screenshots
+./gradlew build              # собрать мод → build/libs/winter-2.0.0.jar (заодно прогоняет серверные тесты)
+./gradlew runClient          # запустить игру с модом
+./gradlew runGameTest        # серверные игровые тесты: заморозка, подарки, рост ёлки, генерация мира, лут
+./gradlew runClientGameTest  # клиентский тест: строит демо-сцену и сохраняет скриншоты в build/run/clientGameTest/screenshots
 ```
 
-Нужна Java 21.
+Нужна Java 25. С 26.1 Minecraft выходит без обфускации, поэтому код использует официальные названия Mojang, а маппинги Yarn не нужны.
 
 ### Как поменять модель
 
 1. Откройте нужный файл из `blockbench/` в Blockbench (приложение или [web.blockbench.net](https://web.blockbench.net/)), отредактируйте и сохраните.
 2. Экспортируйте модель в мод одним из способов:
    * автоматически: `node tools/blockbench_export.js` (или `node tools/blockbench_export.js yeti`). Скрипт открывает проекты в веб-версии Blockbench, выгружает Java-код и JSON, текстуры мобов и превью в `docs/models/`. Нужны Node.js и Playwright с Chromium;
-   * вручную в Blockbench: для мобов **File → Export → Export Java Entity** (версия «1.17+ Yarn»), затем скопируйте метод `getTexturedModelData()` в соответствующий `*ModelData.java`; для блоков **File → Export → Export Block/Item Model** в `src/main/resources/assets/winter/models/block/`.
+   * вручную в Blockbench: для мобов **File → Export → Export Java Entity** (версия «1.17+», названия Mojang), затем скопируйте метод `createBodyLayer()` в соответствующий `*ModelData.java`; для блоков **File → Export → Export Block/Item Model** в `src/main/resources/assets/winter/models/block/`.
 3. `./gradlew build`.
 
 ### Структура проекта
@@ -177,7 +180,7 @@
 blockbench/                   проекты моделей Blockbench (.bbmodel): мобы и объёмные блоки
 src/main/java/ru/winter/      общий код: регистрация, блоки, предметы, существа, механики
 src/client/java/ru/winter/    клиент: рендеры и анимации мобов, экспорт моделей из Blockbench, пар изо рта, подсказки
-src/gametest/                 игровые тесты и демо-сцена; в jar мода не попадают
+src/gametest/                 серверные и клиентский игровые тесты (демо-сцена со скриншотами); в jar мода не попадают
 src/main/resources/           ресурсы и данные (сгенерированы скриптами ниже)
 tools/datagen.py              генератор JSON: модели, рецепты, лут, теги, достижения, мировая генерация, переводы
 tools/textures.py             генератор текстур блоков, предметов и брони (пиксель-арт), --preview рисует сводную картинку

@@ -1,51 +1,52 @@
 package ru.winter.block;
 
 import com.mojang.serialization.MapCodec;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.block.HorizontalFacingBlock;
-import net.minecraft.block.ShapeContext;
-import net.minecraft.block.Waterloggable;
-import net.minecraft.fluid.FluidState;
-import net.minecraft.fluid.Fluids;
-import net.minecraft.item.ItemPlacementContext;
-import net.minecraft.state.StateManager;
-import net.minecraft.state.property.BooleanProperty;
-import net.minecraft.state.property.Properties;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.shape.VoxelShape;
-import net.minecraft.world.BlockView;
-import net.minecraft.world.WorldAccess;
-import net.minecraft.world.WorldView;
-import org.jetbrains.annotations.Nullable;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.ScheduledTickAccess;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.HorizontalDirectionalBlock;
+import net.minecraft.world.level.block.SimpleWaterloggedBlock;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.level.material.FluidState;
+import net.minecraft.world.level.material.Fluids;
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.VoxelShape;
+import org.jspecify.annotations.Nullable;
 
 /**
  * A string of glowing festive lights hanging flat on a wall (placed like a ladder, but not climbable).
  */
-public class GarlandBlock extends HorizontalFacingBlock implements Waterloggable {
-	public static final MapCodec<GarlandBlock> CODEC = createCodec(GarlandBlock::new);
-	public static final BooleanProperty WATERLOGGED = Properties.WATERLOGGED;
+public class GarlandBlock extends HorizontalDirectionalBlock implements SimpleWaterloggedBlock {
+	public static final MapCodec<GarlandBlock> CODEC = simpleCodec(GarlandBlock::new);
+	public static final BooleanProperty WATERLOGGED = BlockStateProperties.WATERLOGGED;
 
-	private static final VoxelShape EAST_SHAPE = Block.createCuboidShape(0.0, 0.0, 0.0, 2.0, 16.0, 16.0);
-	private static final VoxelShape WEST_SHAPE = Block.createCuboidShape(14.0, 0.0, 0.0, 16.0, 16.0, 16.0);
-	private static final VoxelShape SOUTH_SHAPE = Block.createCuboidShape(0.0, 0.0, 0.0, 16.0, 16.0, 2.0);
-	private static final VoxelShape NORTH_SHAPE = Block.createCuboidShape(0.0, 0.0, 14.0, 16.0, 16.0, 16.0);
+	private static final VoxelShape EAST_SHAPE = Block.box(0.0, 0.0, 0.0, 2.0, 16.0, 16.0);
+	private static final VoxelShape WEST_SHAPE = Block.box(14.0, 0.0, 0.0, 16.0, 16.0, 16.0);
+	private static final VoxelShape SOUTH_SHAPE = Block.box(0.0, 0.0, 0.0, 16.0, 16.0, 2.0);
+	private static final VoxelShape NORTH_SHAPE = Block.box(0.0, 0.0, 14.0, 16.0, 16.0, 16.0);
 
-	public GarlandBlock(Settings settings) {
-		super(settings);
-		this.setDefaultState(this.stateManager.getDefaultState().with(FACING, Direction.NORTH).with(WATERLOGGED, false));
+	public GarlandBlock(Properties properties) {
+		super(properties);
+		this.registerDefaultState(this.stateDefinition.any().setValue(FACING, Direction.NORTH).setValue(WATERLOGGED, false));
 	}
 
 	@Override
-	protected MapCodec<? extends HorizontalFacingBlock> getCodec() {
+	protected MapCodec<? extends HorizontalDirectionalBlock> codec() {
 		return CODEC;
 	}
 
 	@Override
-	protected VoxelShape getOutlineShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context) {
-		return switch (state.get(FACING)) {
+	protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+		return switch (state.getValue(FACING)) {
 			case NORTH -> NORTH_SHAPE;
 			case SOUTH -> SOUTH_SHAPE;
 			case WEST -> WEST_SHAPE;
@@ -54,35 +55,33 @@ public class GarlandBlock extends HorizontalFacingBlock implements Waterloggable
 	}
 
 	@Override
-	protected boolean canPlaceAt(BlockState state, WorldView world, BlockPos pos) {
-		Direction facing = state.get(FACING);
-		BlockPos support = pos.offset(facing.getOpposite());
-		return world.getBlockState(support).isSideSolidFullSquare(world, support, facing);
+	protected boolean canSurvive(BlockState state, LevelReader level, BlockPos pos) {
+		Direction facing = state.getValue(FACING);
+		BlockPos support = pos.relative(facing.getOpposite());
+		return level.getBlockState(support).isFaceSturdy(level, support, facing);
 	}
 
 	@Override
-	protected BlockState getStateForNeighborUpdate(
-		BlockState state, Direction direction, BlockState neighborState, WorldAccess world, BlockPos pos, BlockPos neighborPos
-	) {
-		if (direction.getOpposite() == state.get(FACING) && !state.canPlaceAt(world, pos)) {
-			return Blocks.AIR.getDefaultState();
+	protected BlockState updateShape(BlockState state, LevelReader level, ScheduledTickAccess ticks, BlockPos pos, Direction direction,
+		BlockPos neighbourPos, BlockState neighbourState, RandomSource random) {
+		if (direction.getOpposite() == state.getValue(FACING) && !state.canSurvive(level, pos)) {
+			return Blocks.AIR.defaultBlockState();
 		}
-		if (state.get(WATERLOGGED)) {
-			world.scheduleFluidTick(pos, Fluids.WATER, Fluids.WATER.getTickRate(world));
+		if (state.getValue(WATERLOGGED)) {
+			ticks.scheduleTick(pos, Fluids.WATER, Fluids.WATER.getTickDelay(level));
 		}
-		return super.getStateForNeighborUpdate(state, direction, neighborState, world, pos, neighborPos);
+		return super.updateShape(state, level, ticks, pos, direction, neighbourPos, neighbourState, random);
 	}
 
-	@Nullable
 	@Override
-	public BlockState getPlacementState(ItemPlacementContext ctx) {
-		BlockState state = this.getDefaultState();
-		FluidState fluid = ctx.getWorld().getFluidState(ctx.getBlockPos());
-		for (Direction direction : ctx.getPlacementDirections()) {
+	public @Nullable BlockState getStateForPlacement(BlockPlaceContext context) {
+		BlockState state = this.defaultBlockState();
+		FluidState fluid = context.getLevel().getFluidState(context.getClickedPos());
+		for (Direction direction : context.getNearestLookingDirections()) {
 			if (direction.getAxis().isHorizontal()) {
-				state = state.with(FACING, direction.getOpposite());
-				if (state.canPlaceAt(ctx.getWorld(), ctx.getBlockPos())) {
-					return state.with(WATERLOGGED, fluid.getFluid() == Fluids.WATER);
+				state = state.setValue(FACING, direction.getOpposite());
+				if (state.canSurvive(context.getLevel(), context.getClickedPos())) {
+					return state.setValue(WATERLOGGED, fluid.getType() == Fluids.WATER);
 				}
 			}
 		}
@@ -91,11 +90,11 @@ public class GarlandBlock extends HorizontalFacingBlock implements Waterloggable
 
 	@Override
 	protected FluidState getFluidState(BlockState state) {
-		return state.get(WATERLOGGED) ? Fluids.WATER.getStill(false) : super.getFluidState(state);
+		return state.getValue(WATERLOGGED) ? Fluids.WATER.getSource(false) : super.getFluidState(state);
 	}
 
 	@Override
-	protected void appendProperties(StateManager.Builder<Block, BlockState> builder) {
+	protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
 		builder.add(FACING, WATERLOGGED);
 	}
 }

@@ -5,29 +5,31 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 import net.fabricmc.fabric.api.registry.FlammableBlockRegistry;
-import net.minecraft.block.AbstractBlock;
-import net.minecraft.block.Block;
-import net.minecraft.block.Blocks;
-import net.minecraft.block.CarpetBlock;
-import net.minecraft.block.ExperienceDroppingBlock;
-import net.minecraft.block.LeavesBlock;
-import net.minecraft.block.MapColor;
-import net.minecraft.block.SaplingBlock;
-import net.minecraft.block.SaplingGenerator;
-import net.minecraft.block.SlabBlock;
-import net.minecraft.block.StairsBlock;
-import net.minecraft.block.TransparentBlock;
-import net.minecraft.block.WallBlock;
-import net.minecraft.block.enums.NoteBlockInstrument;
-import net.minecraft.block.piston.PistonBehavior;
-import net.minecraft.item.BlockItem;
-import net.minecraft.item.Item;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.Registry;
-import net.minecraft.registry.RegistryKey;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.sound.BlockSoundGroup;
-import net.minecraft.util.math.intprovider.UniformIntProvider;
+import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.util.valueproviders.UniformInt;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.DyeColor;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.CarpetBlock;
+import net.minecraft.world.level.block.DropExperienceBlock;
+import net.minecraft.world.level.block.SaplingBlock;
+import net.minecraft.world.level.block.SlabBlock;
+import net.minecraft.world.level.block.SoundType;
+import net.minecraft.world.level.block.StairBlock;
+import net.minecraft.world.level.block.TransparentBlock;
+import net.minecraft.world.level.block.UntintedParticleLeavesBlock;
+import net.minecraft.world.level.block.WallBlock;
+import net.minecraft.world.level.block.grower.TreeGrower;
+import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraft.world.level.block.state.properties.NoteBlockInstrument;
+import net.minecraft.world.level.material.MapColor;
+import net.minecraft.world.level.material.PushReaction;
+import net.minecraft.core.particles.ParticleTypes;
 import ru.winter.WinterMod;
 import ru.winter.block.FireplaceBlock;
 import ru.winter.block.GarlandBlock;
@@ -39,96 +41,94 @@ import ru.winter.block.StarBlock;
 public final class ModBlocks {
 	public static final List<Block> ALL = new ArrayList<>();
 
-	public static final SaplingGenerator FESTIVE_SPRUCE_GENERATOR = new SaplingGenerator(
+	public static final TreeGrower FESTIVE_SPRUCE_GROWER = new TreeGrower(
 		"winter:festive_spruce",
 		Optional.empty(),
-		Optional.of(RegistryKey.of(RegistryKeys.CONFIGURED_FEATURE, WinterMod.id("festive_spruce"))),
+		Optional.of(ResourceKey.create(Registries.CONFIGURED_FEATURE, WinterMod.id("festive_spruce"))),
 		Optional.empty()
 	);
 
 	// --- Ice & snow building blocks -------------------------------------------------------------
-	public static final Block ICE_BRICKS = register("ice_bricks", new Block(AbstractBlock.Settings.create()
-		.mapColor(MapColor.PALE_PURPLE).instrument(NoteBlockInstrument.CHIME)
-		.strength(0.8F).slipperiness(0.98F).sounds(BlockSoundGroup.GLASS)));
+	public static final Block ICE_BRICKS = register("ice_bricks", Block::new, BlockBehaviour.Properties.of()
+		.mapColor(MapColor.ICE).instrument(NoteBlockInstrument.CHIME).strength(0.8F).friction(0.98F).sound(SoundType.GLASS));
 	public static final Block ICE_BRICK_STAIRS = register("ice_brick_stairs",
-		new StairsBlock(ICE_BRICKS.getDefaultState(), AbstractBlock.Settings.copy(ICE_BRICKS)));
-	public static final Block ICE_BRICK_SLAB = register("ice_brick_slab", new SlabBlock(AbstractBlock.Settings.copy(ICE_BRICKS)));
-	public static final Block ICE_BRICK_WALL = register("ice_brick_wall", new WallBlock(AbstractBlock.Settings.copy(ICE_BRICKS).solid()));
-	public static final Block CHISELED_ICE_BRICKS = register("chiseled_ice_bricks", new Block(AbstractBlock.Settings.copy(ICE_BRICKS)));
+		p -> new StairBlock(ICE_BRICKS.defaultBlockState(), p), BlockBehaviour.Properties.ofFullCopy(ICE_BRICKS));
+	public static final Block ICE_BRICK_SLAB = register("ice_brick_slab", SlabBlock::new, BlockBehaviour.Properties.ofFullCopy(ICE_BRICKS));
+	public static final Block ICE_BRICK_WALL = register("ice_brick_wall", WallBlock::new, BlockBehaviour.Properties.ofFullCopy(ICE_BRICKS).forceSolidOn());
+	public static final Block CHISELED_ICE_BRICKS = register("chiseled_ice_bricks", Block::new, BlockBehaviour.Properties.ofFullCopy(ICE_BRICKS));
 
-	public static final Block SNOW_BRICKS = register("snow_bricks", new Block(AbstractBlock.Settings.create()
-		.mapColor(MapColor.WHITE).strength(0.8F).sounds(BlockSoundGroup.SNOW)));
+	public static final Block SNOW_BRICKS = register("snow_bricks", Block::new, BlockBehaviour.Properties.of()
+		.mapColor(MapColor.SNOW).strength(0.8F).sound(SoundType.SNOW));
 	public static final Block SNOW_BRICK_STAIRS = register("snow_brick_stairs",
-		new StairsBlock(SNOW_BRICKS.getDefaultState(), AbstractBlock.Settings.copy(SNOW_BRICKS)));
-	public static final Block SNOW_BRICK_SLAB = register("snow_brick_slab", new SlabBlock(AbstractBlock.Settings.copy(SNOW_BRICKS)));
-	public static final Block SNOW_BRICK_WALL = register("snow_brick_wall", new WallBlock(AbstractBlock.Settings.copy(SNOW_BRICKS).solid()));
+		p -> new StairBlock(SNOW_BRICKS.defaultBlockState(), p), BlockBehaviour.Properties.ofFullCopy(SNOW_BRICKS));
+	public static final Block SNOW_BRICK_SLAB = register("snow_brick_slab", SlabBlock::new, BlockBehaviour.Properties.ofFullCopy(SNOW_BRICKS));
+	public static final Block SNOW_BRICK_WALL = register("snow_brick_wall", WallBlock::new, BlockBehaviour.Properties.ofFullCopy(SNOW_BRICKS).forceSolidOn());
 
-	public static final Block FROSTED_GLASS = register("frosted_glass",
-		new TransparentBlock(AbstractBlock.Settings.copy(Blocks.GLASS).mapColor(MapColor.LIGHT_BLUE)));
+	public static final Block FROSTED_GLASS = register("frosted_glass", TransparentBlock::new,
+		BlockBehaviour.Properties.ofFullCopy(Blocks.GLASS).mapColor(MapColor.COLOR_LIGHT_BLUE));
 
 	// --- Frost crystal ----------------------------------------------------------------------------
-	public static final Block FROST_CRYSTAL_ORE = register("frost_crystal_ore", new ExperienceDroppingBlock(UniformIntProvider.create(3, 7),
-		AbstractBlock.Settings.copy(Blocks.DIAMOND_ORE).luminance(state -> 3)));
-	public static final Block DEEPSLATE_FROST_CRYSTAL_ORE = register("deepslate_frost_crystal_ore", new ExperienceDroppingBlock(UniformIntProvider.create(3, 7),
-		AbstractBlock.Settings.copy(Blocks.DEEPSLATE_DIAMOND_ORE).luminance(state -> 3)));
-	public static final Block FROST_CRYSTAL_BLOCK = register("frost_crystal_block", new Block(AbstractBlock.Settings.create()
-		.mapColor(MapColor.DIAMOND_BLUE).requiresTool().strength(4.0F, 6.0F).sounds(BlockSoundGroup.AMETHYST_BLOCK).luminance(state -> 6)));
+	public static final Block FROST_CRYSTAL_ORE = register("frost_crystal_ore", p -> new DropExperienceBlock(UniformInt.of(3, 7), p),
+		BlockBehaviour.Properties.ofFullCopy(Blocks.DIAMOND_ORE).lightLevel(state -> 3));
+	public static final Block DEEPSLATE_FROST_CRYSTAL_ORE = register("deepslate_frost_crystal_ore", p -> new DropExperienceBlock(UniformInt.of(3, 7), p),
+		BlockBehaviour.Properties.ofFullCopy(Blocks.DEEPSLATE_DIAMOND_ORE).lightLevel(state -> 3));
+	public static final Block FROST_CRYSTAL_BLOCK = register("frost_crystal_block", Block::new, BlockBehaviour.Properties.of()
+		.mapColor(MapColor.DIAMOND).requiresCorrectToolForDrops().strength(4.0F, 6.0F).sound(SoundType.AMETHYST).lightLevel(state -> 6));
 
 	// --- Icicles, snowy spruce, festive tree --------------------------------------------------------
-	public static final Block ICICLE = register("icicle", new IcicleBlock(AbstractBlock.Settings.create()
-		.mapColor(MapColor.PALE_PURPLE).strength(0.3F).sounds(BlockSoundGroup.GLASS).nonOpaque().noCollision()
-		.ticksRandomly().pistonBehavior(PistonBehavior.DESTROY)));
+	public static final Block ICICLE = register("icicle", IcicleBlock::new, BlockBehaviour.Properties.of()
+		.mapColor(MapColor.ICE).strength(0.3F).sound(SoundType.GLASS).noOcclusion().noCollision().randomTicks()
+		.pushReaction(PushReaction.DESTROY));
 	public static final Block SNOWY_SPRUCE_LEAVES = register("snowy_spruce_leaves",
-		new LeavesBlock(AbstractBlock.Settings.copy(Blocks.SPRUCE_LEAVES).mapColor(MapColor.WHITE)));
+		p -> new UntintedParticleLeavesBlock(0.02F, ParticleTypes.SNOWFLAKE, p),
+		BlockBehaviour.Properties.ofFullCopy(Blocks.SPRUCE_LEAVES).mapColor(MapColor.SNOW));
 	public static final Block FESTIVE_SPRUCE_SAPLING = register("festive_spruce_sapling",
-		new SaplingBlock(FESTIVE_SPRUCE_GENERATOR, AbstractBlock.Settings.copy(Blocks.SPRUCE_SAPLING)));
+		p -> new SaplingBlock(FESTIVE_SPRUCE_GROWER, p), BlockBehaviour.Properties.ofFullCopy(Blocks.SPRUCE_SAPLING));
 
 	// --- New Year decorations ------------------------------------------------------------------------
-	public static final Block GARLAND = register("garland", new GarlandBlock(AbstractBlock.Settings.create()
-		.noCollision().strength(0.2F).sounds(BlockSoundGroup.WOOL).luminance(state -> 10).nonOpaque()
-		.pistonBehavior(PistonBehavior.DESTROY)));
-	public static final Block RED_BAUBLE = register("red_bauble", bauble(MapColor.RED));
-	public static final Block GOLD_BAUBLE = register("gold_bauble", bauble(MapColor.GOLD));
-	public static final Block BLUE_BAUBLE = register("blue_bauble", bauble(MapColor.BLUE));
-	public static final Block STAR = register("star", new StarBlock(AbstractBlock.Settings.create()
-		.mapColor(MapColor.GOLD).noCollision().strength(0.3F).sounds(BlockSoundGroup.METAL).luminance(state -> 15).nonOpaque()
-		.pistonBehavior(PistonBehavior.DESTROY)));
-	public static final Block RED_GIFT = register("red_gift", gift(MapColor.RED));
-	public static final Block GREEN_GIFT = register("green_gift", gift(MapColor.GREEN));
-	public static final Block BLUE_GIFT = register("blue_gift", gift(MapColor.BLUE));
-	public static final Block FIREPLACE = register("fireplace", new FireplaceBlock(AbstractBlock.Settings.create()
-		.mapColor(MapColor.RED).instrument(NoteBlockInstrument.BASEDRUM).requiresTool().strength(2.0F, 6.0F).nonOpaque()
-		.luminance(state -> state.get(FireplaceBlock.LIT) ? 14 : 0)));
+	public static final Block GARLAND = register("garland", GarlandBlock::new, BlockBehaviour.Properties.of()
+		.noCollision().strength(0.2F).sound(SoundType.WOOL).lightLevel(state -> 10).noOcclusion().pushReaction(PushReaction.DESTROY));
+	public static final Block RED_BAUBLE = register("red_bauble", HangingDecorationBlock::new, bauble(MapColor.COLOR_RED));
+	public static final Block GOLD_BAUBLE = register("gold_bauble", HangingDecorationBlock::new, bauble(MapColor.GOLD));
+	public static final Block BLUE_BAUBLE = register("blue_bauble", HangingDecorationBlock::new, bauble(MapColor.COLOR_BLUE));
+	public static final Block STAR = register("star", StarBlock::new, BlockBehaviour.Properties.of()
+		.mapColor(MapColor.GOLD).noCollision().strength(0.3F).sound(SoundType.METAL).lightLevel(state -> 15).noOcclusion()
+		.pushReaction(PushReaction.DESTROY));
+	public static final Block RED_GIFT = register("red_gift", GiftBlock::new, gift(MapColor.COLOR_RED));
+	public static final Block GREEN_GIFT = register("green_gift", GiftBlock::new, gift(MapColor.COLOR_GREEN));
+	public static final Block BLUE_GIFT = register("blue_gift", GiftBlock::new, gift(MapColor.COLOR_BLUE));
+	public static final Block FIREPLACE = register("fireplace", FireplaceBlock::new, BlockBehaviour.Properties.of()
+		.mapColor(MapColor.COLOR_RED).instrument(NoteBlockInstrument.BASEDRUM).requiresCorrectToolForDrops().strength(2.0F, 6.0F)
+		.noOcclusion().lightLevel(state -> state.getValue(FireplaceBlock.LIT) ? 14 : 0));
 
 	// --- Yeti fur ------------------------------------------------------------------------------------
-	public static final Block YETI_FUR_BLOCK = register("yeti_fur_block",
-		new Block(AbstractBlock.Settings.copy(Blocks.WHITE_WOOL).mapColor(MapColor.WHITE)));
-	public static final Block YETI_FUR_CARPET = register("yeti_fur_carpet",
-		new CarpetBlock(AbstractBlock.Settings.copy(Blocks.WHITE_CARPET).mapColor(MapColor.WHITE)));
+	public static final Block YETI_FUR_BLOCK = register("yeti_fur_block", Block::new,
+		BlockBehaviour.Properties.ofFullCopy(Blocks.WOOL.pick(DyeColor.WHITE)).mapColor(MapColor.SNOW));
+	public static final Block YETI_FUR_CARPET = register("yeti_fur_carpet", CarpetBlock::new,
+		BlockBehaviour.Properties.ofFullCopy(Blocks.CARPET.pick(DyeColor.WHITE)).mapColor(MapColor.SNOW));
 
 	private ModBlocks() {
 	}
 
-	private static Block bauble(MapColor color) {
-		return new HangingDecorationBlock(AbstractBlock.Settings.create()
-			.mapColor(color).strength(0.2F).sounds(BlockSoundGroup.GLASS).nonOpaque().noCollision()
-			.luminance(state -> 4).pistonBehavior(PistonBehavior.DESTROY));
+	private static BlockBehaviour.Properties bauble(MapColor color) {
+		return BlockBehaviour.Properties.of().mapColor(color).strength(0.2F).sound(SoundType.GLASS).noOcclusion().noCollision()
+			.lightLevel(state -> 4).pushReaction(PushReaction.DESTROY);
 	}
 
-	private static Block gift(MapColor color) {
-		return new GiftBlock(AbstractBlock.Settings.create()
-			.mapColor(color).strength(0.6F).sounds(BlockSoundGroup.WOOL).nonOpaque().pistonBehavior(PistonBehavior.DESTROY));
+	private static BlockBehaviour.Properties gift(MapColor color) {
+		return BlockBehaviour.Properties.of().mapColor(color).strength(0.6F).sound(SoundType.WOOL).noOcclusion()
+			.pushReaction(PushReaction.DESTROY);
 	}
 
-	private static Block register(String name, Block block) {
-		return register(name, block, b -> new BlockItem(b, new Item.Settings()));
-	}
-
-	private static Block register(String name, Block block, Function<Block, Item> itemFactory) {
-		Block registered = Registry.register(Registries.BLOCK, WinterMod.id(name), block);
-		Registry.register(Registries.ITEM, WinterMod.id(name), itemFactory.apply(registered));
-		ALL.add(registered);
-		return registered;
+	private static Block register(String name, Function<BlockBehaviour.Properties, Block> factory, BlockBehaviour.Properties properties) {
+		ResourceKey<Block> key = ResourceKey.create(Registries.BLOCK, WinterMod.id(name));
+		Block block = Registry.register(BuiltInRegistries.BLOCK, key, factory.apply(properties.setId(key)));
+		ResourceKey<Item> itemKey = ResourceKey.create(Registries.ITEM, WinterMod.id(name));
+		BlockItem item = new BlockItem(block, new Item.Properties().setId(itemKey).useBlockDescriptionPrefix());
+		item.registerBlocks(Item.BY_BLOCK, item);
+		Registry.register(BuiltInRegistries.ITEM, itemKey, item);
+		ALL.add(block);
+		return block;
 	}
 
 	public static void init() {

@@ -6,12 +6,8 @@
     "F F"
   ],
   "key": {
-    "L": {
-      "item": "minecraft:leather"
-    },
-    "F": {
-      "tag": "winter:warm_fur"
-    }
+    "L": "minecraft:leather",
+    "F": "#winter:warm_fur"
   },
   "result": {
     "id": "winter:ushanka",

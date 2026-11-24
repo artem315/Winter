@@ -7,9 +7,7 @@
     "###"
   ],
   "key": {
-    "#": {
-      "item": "winter:snow_bricks"
-    }
+    "#": "winter:snow_bricks"
   },
   "result": {
     "id": "winter:snow_brick_stairs",

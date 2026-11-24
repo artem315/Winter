@@ -1,83 +1,84 @@
 package ru.winter.block;
 
 import com.mojang.serialization.MapCodec;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.block.ShapeContext;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.particle.ParticleTypes;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.random.Random;
-import net.minecraft.util.shape.VoxelShape;
-import net.minecraft.world.BlockView;
-import net.minecraft.world.LightType;
-import net.minecraft.world.World;
-import net.minecraft.world.WorldAccess;
-import net.minecraft.world.WorldView;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.InsideBlockEffectApplier;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.LightLayer;
+import net.minecraft.world.level.ScheduledTickAccess;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.VoxelShape;
 
 /**
- * An icicle hanging from a ceiling (or from another icicle). Melts near bright light or in warm biomes,
- * and is sharp: entities that run into it get hurt a little.
+ * Icicles hanging from a ceiling (or from other icicles). They melt near bright light or in warm biomes,
+ * and are sharp: entities that run into them get hurt a little.
  */
 public class IcicleBlock extends Block {
-	public static final MapCodec<IcicleBlock> CODEC = createCodec(IcicleBlock::new);
-	private static final VoxelShape SHAPE = Block.createCuboidShape(2.0, 0.0, 2.0, 14.0, 16.0, 13.0);
+	public static final MapCodec<IcicleBlock> CODEC = simpleCodec(IcicleBlock::new);
+	private static final VoxelShape SHAPE = Block.box(2.0, 0.0, 2.0, 14.0, 16.0, 13.0);
 
-	public IcicleBlock(Settings settings) {
-		super(settings);
+	public IcicleBlock(Properties properties) {
+		super(properties);
 	}
 
 	@Override
-	protected MapCodec<? extends Block> getCodec() {
+	protected MapCodec<? extends Block> codec() {
 		return CODEC;
 	}
 
 	@Override
-	protected VoxelShape getOutlineShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context) {
+	protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
 		return SHAPE;
 	}
 
 	@Override
-	protected boolean canPlaceAt(BlockState state, WorldView world, BlockPos pos) {
-		BlockState above = world.getBlockState(pos.up());
-		return above.isOf(this) || above.isSideSolidFullSquare(world, pos.up(), Direction.DOWN);
+	protected boolean canSurvive(BlockState state, LevelReader level, BlockPos pos) {
+		BlockState above = level.getBlockState(pos.above());
+		return above.is(this) || above.isFaceSturdy(level, pos.above(), Direction.DOWN);
 	}
 
 	@Override
-	protected BlockState getStateForNeighborUpdate(
-		BlockState state, Direction direction, BlockState neighborState, WorldAccess world, BlockPos pos, BlockPos neighborPos
-	) {
-		if (direction == Direction.UP && !state.canPlaceAt(world, pos)) {
-			return Blocks.AIR.getDefaultState();
+	protected BlockState updateShape(BlockState state, LevelReader level, ScheduledTickAccess ticks, BlockPos pos, Direction direction,
+		BlockPos neighbourPos, BlockState neighbourState, RandomSource random) {
+		if (direction == Direction.UP && !state.canSurvive(level, pos)) {
+			return Blocks.AIR.defaultBlockState();
 		}
-		return super.getStateForNeighborUpdate(state, direction, neighborState, world, pos, neighborPos);
+		return super.updateShape(state, level, ticks, pos, direction, neighbourPos, neighbourState, random);
 	}
 
 	@Override
-	protected void randomTick(BlockState state, ServerWorld world, BlockPos pos, Random random) {
-		boolean warmBiome = !world.getBiome(pos).value().isCold(pos);
-		boolean brightLight = world.getLightLevel(LightType.BLOCK, pos) > 11;
-		if ((brightLight || (warmBiome && world.isDay())) && random.nextInt(3) == 0) {
-			world.breakBlock(pos, false);
-		}
-	}
-
-	@Override
-	protected void onEntityCollision(BlockState state, World world, BlockPos pos, Entity entity) {
-		if (!world.isClient && entity instanceof LivingEntity living && entity.getVelocity().horizontalLengthSquared() > 0.04) {
-			living.damage(world.getDamageSources().stalagmite(), 1.0F);
+	protected void randomTick(BlockState state, ServerLevel level, BlockPos pos, RandomSource random) {
+		boolean warmBiome = !level.getBiome(pos).value().coldEnoughToSnow(pos, level.getSeaLevel());
+		boolean brightLight = level.getBrightness(LightLayer.BLOCK, pos) > 11;
+		if ((brightLight || (warmBiome && level.isBrightOutside())) && random.nextInt(3) == 0) {
+			level.destroyBlock(pos, false);
 		}
 	}
 
 	@Override
-	public void randomDisplayTick(BlockState state, World world, BlockPos pos, Random random) {
-		if (random.nextInt(12) == 0 && !world.getBlockState(pos.down()).isOf(this)) {
-			world.addParticle(ParticleTypes.DRIPPING_DRIPSTONE_WATER,
-				pos.getX() + 0.5, pos.getY() + 0.1, pos.getZ() + 0.5, 0.0, 0.0, 0.0);
+	protected void entityInside(BlockState state, Level level, BlockPos pos, Entity entity, InsideBlockEffectApplier effectApplier,
+		boolean isPrecise) {
+		if (level instanceof ServerLevel serverLevel && entity instanceof LivingEntity living
+			&& entity.getDeltaMovement().horizontalDistanceSqr() > 0.04) {
+			living.hurtServer(serverLevel, level.damageSources().stalagmite(), 1.0F);
+		}
+	}
+
+	@Override
+	public void animateTick(BlockState state, Level level, BlockPos pos, RandomSource random) {
+		if (random.nextInt(12) == 0 && !level.getBlockState(pos.below()).is(this)) {
+			level.addParticle(ParticleTypes.DRIPPING_DRIPSTONE_WATER, pos.getX() + 0.5, pos.getY() + 0.05, pos.getZ() + 0.5, 0.0, 0.0, 0.0);
 		}
 	}
 }

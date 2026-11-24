@@ -62,12 +62,18 @@ def simple_state(name, model=None):
     blockstate(name, {"variants": {"": {"model": m(f"block/{model or name}")}}})
 
 
+def item_definition(name, model):
+    """Item model definition (assets/winter/items, since 1.21.4): which model renders the item."""
+    write(asset("items", f"{name}.json"), {"model": {"type": "minecraft:model", "model": model}})
+
+
 def item_from_block(name, model=None):
-    item_model(name, {"parent": m(f"block/{model or name}")})
+    item_definition(name, m(f"block/{model or name}"))
 
 
 def item_generated(name, texture=None, parent="minecraft:item/generated"):
     item_model(name, {"parent": parent, "textures": {"layer0": m(texture or f"item/{name}")}})
+    item_definition(name, m(f"item/{name}"))
 
 
 def cube_all(name, texture=None):
@@ -236,8 +242,16 @@ def gen_models():
     for name in ("frost_sword", "frost_pickaxe", "frost_axe", "frost_shovel", "frost_hoe", "snow_shovel",
                  "frost_staff", "candy_cane"):
         item_generated(name, parent="minecraft:item/handheld")
+    # since 1.21.5 every spawn egg has its own texture
     for name in ("yeti_spawn_egg", "ded_moroz_spawn_egg"):
-        item_model(name, {"parent": "minecraft:item/template_spawn_egg"})
+        item_generated(name)
+
+    # equipment assets: how worn armor looks (textures/entity/equipment/<layer>/<name>.png)
+    write(asset("equipment", "winter_clothing.json"), {"layers": {
+        "humanoid": [{"texture": m("winter_clothing")}],
+        "humanoid_leggings": [{"texture": m("winter_clothing")}],
+    }})
+    write(asset("equipment", "ice_skates.json"), {"layers": {"humanoid": [{"texture": m("ice_skates")}]}})
 
 
 # =====================================================================================================
@@ -347,12 +361,12 @@ EXTRA = {
     "effect.winter.warmth": ("Warmth", "Тепло"),
     "enchantment.winter.insulation": ("Insulation", "Утепление"),
     "enchantment.winter.frost_aspect": ("Frost Aspect", "Ледяное касание"),
-    "gamerule.winterFreezing": ("Winter: freezing in cold biomes", "Зима: замерзание в холодных биомах"),
-    "gamerule.winterFreezing.description": (
+    "gamerule.winter.freezing": ("Winter: freezing in cold biomes", "Зима: замерзание в холодных биомах"),
+    "gamerule.winter.freezing.description": (
         "Players without warm clothes slowly freeze in snowy biomes",
         "Игроки без тёплой одежды постепенно замерзают в снежных биомах"),
-    "gamerule.winterFreezingDamage": ("Winter: freezing deals damage", "Зима: замерзание наносит урон"),
-    "gamerule.winterFreezingDamage.description": (
+    "gamerule.winter.freezing_damage": ("Winter: freezing deals damage", "Зима: замерзание наносит урон"),
+    "gamerule.winter.freezing_damage.description": (
         "Whether fully frozen players take damage from the cold",
         "Получают ли полностью замёрзшие игроки урон от холода"),
     "item.winter.thermometer.reading": ("Temperature: %s  Insulation: %s  %s", "Температура: %s  Утепление: %s  %s"),
@@ -365,6 +379,7 @@ EXTRA = {
     "tag.item.winter.warm_fur": ("Warm Fur", "Тёплый мех"),
     "tag.item.winter.insulation.strong": ("Warm Clothing", "Тёплая одежда"),
     "tag.item.winter.insulation.light": ("Light Insulation", "Лёгкое утепление"),
+    "tag.item.winter.repairs_frost_tools": ("Frost Tool Repair Materials", "Материалы для ремонта морозных инструментов"),
 }
 
 ADVANCEMENTS_TEXT = {
@@ -419,8 +434,8 @@ def gen_lang():
 
 def ing(x):
     if x.startswith("#"):
-        return {"tag": x[1:] if ":" in x else f"minecraft:{x[1:]}"}
-    return {"item": x if ":" in x else f"minecraft:{x}"}
+        return x if ":" in x else f"#minecraft:{x[1:]}"
+    return x if ":" in x else f"minecraft:{x}"
 
 
 def recipe(name, obj):
@@ -705,6 +720,7 @@ def gen_tags():
                                           "minecraft:leather_leggings", "minecraft:leather_boots",
                                           m("ice_skates")])
     tag(MOD, "item", "warm_fur", ["minecraft:rabbit_hide", m("yeti_fur")])
+    tag(MOD, "item", "repairs_frost_tools", [m("frost_crystal")])
 
     # Entity type tags
     tag("minecraft", "entity_type", "freeze_immune_entity_types", [m("yeti"), m("ded_moroz")])
@@ -749,7 +765,7 @@ def gen_enchantments():
     write(data(MOD, "enchantment", "frost_aspect.json"), {
         "description": {"translate": "enchantment.winter.frost_aspect"},
         "supported_items": "#minecraft:enchantable/fire_aspect",
-        "primary_items": "#minecraft:enchantable/sword",
+        "primary_items": "#minecraft:enchantable/melee_weapon",
         "exclusive_set": "#winter:exclusive_set/elemental_aspect",
         "weight": 2,
         "max_level": 2,
@@ -817,16 +833,18 @@ def gen_worldgen():
              "exclusion_radius_y": 0, "required_empty_blocks": 1, "block_provider": bauble_provider,
              "directions": ["down"]},
         ],
-        "dirt_provider": {"type": "minecraft:simple_state_provider", "state": {"Name": "minecraft:dirt"}},
+        "below_trunk_provider": {"type": "minecraft:rule_based_state_provider", "rules": [{
+            "if_true": {"type": "minecraft:not", "predicate": {"type": "minecraft:matching_block_tag",
+                                                               "tag": "minecraft:cannot_replace_below_tree_trunk"}},
+            "then": {"type": "minecraft:simple_state_provider", "state": {"Name": "minecraft:dirt"}}}]},
         "foliage_placer": {"type": "minecraft:spruce_foliage_placer",
                            "offset": {"type": "minecraft:uniform", "min_inclusive": 0, "max_inclusive": 2},
                            "radius": {"type": "minecraft:uniform", "min_inclusive": 2, "max_inclusive": 3},
                            "trunk_height": {"type": "minecraft:uniform", "min_inclusive": 1, "max_inclusive": 2}},
         "foliage_provider": {"type": "minecraft:simple_state_provider", "state": {
             "Name": m("snowy_spruce_leaves"), "Properties": {"distance": "7", "persistent": "false", "waterlogged": "false"}}},
-        "force_dirt": False,
         "ignore_vines": True,
-        "minimum_size": {"type": "minecraft:two_layers_feature_size", "limit": 2, "lower_size": 0, "upper_size": 2},
+        "minimum_size": {"type": "minecraft:two_layers_feature_size", "limit": 2, "upper_size": 2},
         "trunk_placer": {"type": "minecraft:straight_trunk_placer", "base_height": 5, "height_rand_a": 2, "height_rand_b": 1},
         "trunk_provider": {"type": "minecraft:simple_state_provider", "state": {
             "Name": "minecraft:spruce_log", "Properties": {"axis": "y"}}},
@@ -890,12 +908,12 @@ def has_items(*items):
 
 def gen_advancements():
     advancement("root", None, "red_gift", {"tick": {"trigger": "minecraft:tick"}},
-                background="minecraft:textures/block/snow.png", toast=False, announce=False)
+                background="minecraft:block/snow", toast=False, announce=False)
     advancement("frost_crystal", "root", "frost_crystal", {"get": has_items("frost_crystal")})
     advancement("frost_sword", "frost_crystal", "frost_sword", {"get": has_items("frost_sword")})
     advancement("frost_staff", "frost_sword", "frost_staff", {"get": has_items("frost_staff")}, frame="goal")
-    advancement("warm_clothes", "root", "ushanka", {"wear": {"trigger": "minecraft:tick", "conditions": {"player": [
-        {"condition": "minecraft:entity_properties", "entity": "this", "predicate": {"equipment": {
+    advancement("warm_clothes", "root", "ushanka", {"wear": {"trigger": "minecraft:location", "conditions": {"player": [
+        {"condition": "minecraft:entity_properties", "entity": "this", "predicate": {"minecraft:equipment": {
             "head": {"items": m("ushanka")}, "chest": {"items": m("sweater")},
             "legs": {"items": m("quilted_pants")}, "feet": {"items": m("valenki")}}}}]}}}, frame="goal")
     advancement("hot_drink", "root", "hot_chocolate", {
@@ -909,15 +927,15 @@ def gen_advancements():
         "location": [{"condition": "minecraft:block_state_property", "block": m("star")}]}}})
     advancement("trade_ded_moroz", "open_gift", "ded_moroz_spawn_egg", {"trade": {
         "trigger": "minecraft:villager_trade", "conditions": {"villager": [
-            {"condition": "minecraft:entity_properties", "entity": "this", "predicate": {"type": m("ded_moroz")}}]}}},
+            {"condition": "minecraft:entity_properties", "entity": "this", "predicate": {"minecraft:entity_type": m("ded_moroz")}}]}}},
                 frame="goal")
     advancement("kill_yeti", "root", "yeti_fur", {"kill": {"trigger": "minecraft:player_killed_entity", "conditions": {
-        "entity": [{"condition": "minecraft:entity_properties", "entity": "this", "predicate": {"type": m("yeti")}}]}}},
+        "entity": [{"condition": "minecraft:entity_properties", "entity": "this", "predicate": {"minecraft:entity_type": m("yeti")}}]}}},
                 frame="challenge")
-    advancement("skating", "root", "ice_skates", {"skate": {"trigger": "minecraft:tick", "conditions": {"player": [
+    advancement("skating", "root", "ice_skates", {"skate": {"trigger": "minecraft:location", "conditions": {"player": [
         {"condition": "minecraft:entity_properties", "entity": "this", "predicate": {
-            "equipment": {"feet": {"items": m("ice_skates")}},
-            "stepping_on": {"block": {"blocks": "#minecraft:ice"}}}}]}}})
+            "minecraft:equipment": {"feet": {"items": m("ice_skates")}},
+            "minecraft:stepping_on": {"block": {"blocks": "#minecraft:ice"}}}}]}}})
 
 
 # Block models exported from Blockbench by tools/blockbench_export.js; this script must not touch them.
@@ -925,7 +943,8 @@ BLOCKBENCH_MODELS = {"fireplace", "fireplace_on", "template_gift", "template_bau
 
 
 def main():
-    for sub in (os.path.join(ROOT, "data"), asset("blockstates"), asset("models", "item"), asset("lang")):
+    for sub in (os.path.join(ROOT, "data"), asset("blockstates"), asset("models", "item"), asset("items"),
+                asset("equipment"), asset("lang")):
         if os.path.isdir(sub):
             shutil.rmtree(sub)
     block_models = asset("models", "block")

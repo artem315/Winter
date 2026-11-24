@@ -8,8 +8,8 @@
     "fabric-gametest": [
       "ru.winter.gametest.WinterGameTests"
     ],
-    "client": [
-      "ru.winter.gametest.ShowcaseClient"
+    "fabric-client-gametest": [
+      "ru.winter.gametest.WinterClientGameTest"
     ]
   },
   "depends": {

@@ -1,7 +1,7 @@
 package ru.winter;
 
 import net.fabricmc.api.ModInitializer;
-import net.minecraft.util.Identifier;
+import net.minecraft.resources.Identifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.winter.mechanic.FreezingHandler;
@@ -24,12 +24,12 @@ public class WinterMod implements ModInitializer {
 	public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 
 	public static Identifier id(String path) {
-		return Identifier.of(MOD_ID, path);
+		return Identifier.fromNamespaceAndPath(MOD_ID, path);
 	}
 
 	@Override
 	public void onInitialize() {
-		// Order matters: effects are used by food components, blocks/entities by items.
+		// Order matters: effects are used by food, blocks and entity types by items.
 		ModEffects.init();
 		ModBlocks.init();
 		ModEntities.init();

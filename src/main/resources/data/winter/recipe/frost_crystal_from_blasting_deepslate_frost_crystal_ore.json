@@ -1,9 +1,7 @@
 {
   "type": "minecraft:blasting",
   "category": "misc",
-  "ingredient": {
-    "item": "winter:deepslate_frost_crystal_ore"
-  },
+  "ingredient": "winter:deepslate_frost_crystal_ore",
   "result": {
     "id": "winter:frost_crystal"
   },

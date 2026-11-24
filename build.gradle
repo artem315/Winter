@@ -1,6 +1,5 @@
 plugins {
-    id 'fabric-loom' version '1.11.8'
-    id 'maven-publish'
+    id 'net.fabricmc.fabric-loom' version "${loom_version}"
 }
 
 version = project.mod_version
@@ -8,15 +7,6 @@ group = project.maven_group
 
 base {
     archivesName = project.archives_base_name
-}
-
-repositories {
-}
-
-
-// Game tests and the showcase helper live in their own source set, so they never end up in the mod jar.
-sourceSets {
-    gametest
 }
 
 loom {
@@ -27,65 +17,43 @@ loom {
             sourceSet sourceSets.main
             sourceSet sourceSets.client
         }
-        "winter-gametest" {
-            sourceSet sourceSets.gametest
-        }
-    }
-
-    runs {
-        // Headless server with Fabric GameTest enabled: loads all mod data,
-        // runs the registered game tests and exits. Used as a smoke test.
-        gametest {
-            server()
-            source sourceSets.gametest
-            name = "Game Test"
-            vmArg "-Dfabric-api.gametest"
-            vmArg "-Dfabric-api.gametest.report-file=${project.layout.buildDirectory.get().asFile}/gametest/junit.xml"
-            runDir "build/gametest"
-        }
-
-        // Development helper: starts the client, builds a showcase scene and saves screenshots
-        // to build/showcase/screenshots (see ShowcaseClient in the gametest source set).
-        showcase {
-            client()
-            source sourceSets.gametest
-            name = "Showcase"
-            vmArg "-Dwinter.showcase=true"
-            programArgs "--width", "1280", "--height", "720"
-            runDir "build/showcase"
-        }
     }
 }
 
-// The client source set only exists after splitEnvironmentSourceSets() above.
-sourceSets.gametest {
-    compileClasspath += sourceSets.client.compileClasspath + sourceSets.main.output + sourceSets.client.output
-    runtimeClasspath += sourceSets.client.runtimeClasspath + sourceSets.main.output + sourceSets.client.output
+// Server game tests run with `./gradlew build` (and `runGameTest`); client game tests with
+// `./gradlew runClientGameTest` - they build a showcase scene and save screenshots to
+// build/run/clientGameTest/screenshots. The tests live in src/gametest and are not part of the mod jar.
+fabricApi {
+    configureTests {
+        createSourceSet = true
+        modId = "winter-gametest"
+        enableGameTests = true
+        enableClientGameTests = true
+    }
 }
 
 dependencies {
     minecraft "com.mojang:minecraft:${project.minecraft_version}"
-    mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
-    modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
-    modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+    implementation "net.fabricmc:fabric-loader:${project.loader_version}"
+    implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 }
 
 processResources {
-    inputs.property "version", project.version
+    def version = project.version
+    inputs.property "version", version
 
     filesMatching("fabric.mod.json") {
-        expand "version": inputs.properties.version
+        expand "version": version
     }
 }
 
 tasks.withType(JavaCompile).configureEach {
-    it.options.release = 21
+    it.options.release = 25
     it.options.encoding = "UTF-8"
 }
 
 java {
     withSourcesJar()
-    sourceCompatibility = JavaVersion.VERSION_21
-    targetCompatibility = JavaVersion.VERSION_21
+    sourceCompatibility = JavaVersion.VERSION_25
+    targetCompatibility = JavaVersion.VERSION_25
 }
-

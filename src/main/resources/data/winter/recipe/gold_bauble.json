@@ -7,15 +7,9 @@
     " G "
   ],
   "key": {
-    "N": {
-      "item": "minecraft:gold_nugget"
-    },
-    "G": {
-      "item": "minecraft:glass"
-    },
-    "D": {
-      "item": "minecraft:yellow_dye"
-    }
+    "N": "minecraft:gold_nugget",
+    "G": "minecraft:glass",
+    "D": "minecraft:yellow_dye"
   },
   "result": {
     "id": "winter:gold_bauble",
