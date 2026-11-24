@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:smelting",
+  "category": "misc",
+  "ingredient": {
+    "item": "winter:frost_crystal_ore"
+  },
+  "result": {
+    "id": "winter:frost_crystal"
+  },
+  "experience": 1.0,
+  "cookingtime": 200
+}

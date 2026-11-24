@@ -1,0 +1,28 @@
+{
+  "type": "minecraft:simple_block",
+  "config": {
+    "to_place": {
+      "type": "minecraft:weighted_state_provider",
+      "entries": [
+        {
+          "weight": 1,
+          "data": {
+            "Name": "winter:red_gift"
+          }
+        },
+        {
+          "weight": 1,
+          "data": {
+            "Name": "winter:green_gift"
+          }
+        },
+        {
+          "weight": 1,
+          "data": {
+            "Name": "winter:blue_gift"
+          }
+        }
+      ]
+    }
+  }
+}

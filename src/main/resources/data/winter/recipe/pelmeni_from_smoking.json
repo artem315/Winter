@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:smoking",
+  "category": "food",
+  "ingredient": {
+    "item": "winter:raw_pelmeni"
+  },
+  "result": {
+    "id": "winter:pelmeni"
+  },
+  "experience": 0.35,
+  "cookingtime": 100
+}

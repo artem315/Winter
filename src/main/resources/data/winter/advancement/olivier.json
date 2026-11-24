@@ -1,0 +1,28 @@
+{
+  "display": {
+    "icon": {
+      "id": "winter:olivier_salad"
+    },
+    "title": {
+      "translate": "advancements.winter.olivier.title"
+    },
+    "description": {
+      "translate": "advancements.winter.olivier.description"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "criteria": {
+    "eat": {
+      "trigger": "minecraft:consume_item",
+      "conditions": {
+        "item": {
+          "items": "winter:olivier_salad"
+        }
+      }
+    }
+  },
+  "parent": "winter:hot_drink"
+}

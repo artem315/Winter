@@ -1,0 +1,23 @@
+{
+  "display": {
+    "icon": {
+      "id": "winter:red_gift"
+    },
+    "title": {
+      "translate": "advancements.winter.root.title"
+    },
+    "description": {
+      "translate": "advancements.winter.root.description"
+    },
+    "frame": "task",
+    "show_toast": false,
+    "announce_to_chat": false,
+    "hidden": false,
+    "background": "minecraft:textures/block/snow.png"
+  },
+  "criteria": {
+    "tick": {
+      "trigger": "minecraft:tick"
+    }
+  }
+}

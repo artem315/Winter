@@ -1,0 +1,31 @@
+{
+  "display": {
+    "icon": {
+      "id": "winter:star"
+    },
+    "title": {
+      "translate": "advancements.winter.star_on_top.title"
+    },
+    "description": {
+      "translate": "advancements.winter.star_on_top.description"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "criteria": {
+    "place": {
+      "trigger": "minecraft:placed_block",
+      "conditions": {
+        "location": [
+          {
+            "condition": "minecraft:block_state_property",
+            "block": "winter:star"
+          }
+        ]
+      }
+    }
+  },
+  "parent": "winter:open_gift"
+}

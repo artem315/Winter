@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "###",
+    "###"
+  ],
+  "key": {
+    "#": {
+      "item": "winter:snow_bricks"
+    }
+  },
+  "result": {
+    "id": "winter:snow_brick_wall",
+    "count": 6
+  }
+}

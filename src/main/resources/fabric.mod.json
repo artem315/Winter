@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "id": "winter",
+  "version": "${version}",
+  "name": "Winter",
+  "description": "Зима пришла! Мороз и тёплая одежда, ушанка и валенки, Дед Мороз и Йети, подарки, ёлки, гирлянды, морозные кристаллы, коньки, пельмени и горячий шоколад.\nWinter has come: freezing cold and warm clothes, Father Frost and the Yeti, gifts, Christmas trees, frost crystals, ice skates and festive food.",
+  "authors": [
+    "Winter mod contributors"
+  ],
+  "contact": {},
+  "icon": "assets/winter/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "ru.winter.WinterMod"
+    ],
+    "client": [
+      "ru.winter.client.WinterClient"
+    ]
+  },
+  "depends": {
+    "fabricloader": ">=0.16.0",
+    "minecraft": "~1.21.1",
+    "java": ">=21",
+    "fabric-api": "*"
+  }
+}

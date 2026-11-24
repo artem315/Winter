@@ -1,0 +1,10 @@
+{
+  "type": "minecraft:stonecutting",
+  "ingredient": {
+    "item": "winter:ice_bricks"
+  },
+  "result": {
+    "id": "winter:chiseled_ice_bricks",
+    "count": 1
+  }
+}

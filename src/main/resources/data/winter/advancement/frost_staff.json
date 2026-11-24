@@ -1,0 +1,32 @@
+{
+  "display": {
+    "icon": {
+      "id": "winter:frost_staff"
+    },
+    "title": {
+      "translate": "advancements.winter.frost_staff.title"
+    },
+    "description": {
+      "translate": "advancements.winter.frost_staff.description"
+    },
+    "frame": "goal",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "criteria": {
+    "get": {
+      "trigger": "minecraft:inventory_changed",
+      "conditions": {
+        "items": [
+          {
+            "items": [
+              "winter:frost_staff"
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "parent": "winter:frost_sword"
+}

@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:blasting",
+  "category": "misc",
+  "ingredient": {
+    "item": "winter:deepslate_frost_crystal_ore"
+  },
+  "result": {
+    "id": "winter:frost_crystal"
+  },
+  "experience": 1.0,
+  "cookingtime": 100
+}

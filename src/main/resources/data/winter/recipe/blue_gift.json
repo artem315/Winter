@@ -1,0 +1,27 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "SDS",
+    "PEP",
+    "PPP"
+  ],
+  "key": {
+    "S": {
+      "item": "minecraft:string"
+    },
+    "D": {
+      "item": "minecraft:blue_dye"
+    },
+    "P": {
+      "item": "minecraft:paper"
+    },
+    "E": {
+      "item": "minecraft:emerald"
+    }
+  },
+  "result": {
+    "id": "winter:blue_gift",
+    "count": 1
+  }
+}

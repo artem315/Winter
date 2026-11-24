@@ -1,0 +1,6 @@
+{
+  "parent": "winter:block/template_bauble",
+  "textures": {
+    "bauble": "winter:block/blue_bauble"
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/orientable",
+  "textures": {
+    "top": "winter:block/fireplace_top",
+    "front": "winter:block/fireplace_front",
+    "side": "winter:block/fireplace_side"
+  }
+}

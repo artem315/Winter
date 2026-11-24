@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "#",
+    "#"
+  ],
+  "key": {
+    "#": {
+      "item": "winter:ice_brick_slab"
+    }
+  },
+  "result": {
+    "id": "winter:chiseled_ice_bricks",
+    "count": 1
+  }
+}

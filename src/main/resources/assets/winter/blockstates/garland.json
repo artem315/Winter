@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=north": {
+      "model": "winter:block/garland"
+    },
+    "facing=east": {
+      "model": "winter:block/garland",
+      "y": 90
+    },
+    "facing=south": {
+      "model": "winter:block/garland",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "winter:block/garland",
+      "y": 270
+    }
+  }
+}

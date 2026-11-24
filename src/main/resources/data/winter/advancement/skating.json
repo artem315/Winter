@@ -1,0 +1,43 @@
+{
+  "display": {
+    "icon": {
+      "id": "winter:ice_skates"
+    },
+    "title": {
+      "translate": "advancements.winter.skating.title"
+    },
+    "description": {
+      "translate": "advancements.winter.skating.description"
+    },
+    "frame": "task",
+    "show_toast": true,
+    "announce_to_chat": true,
+    "hidden": false
+  },
+  "criteria": {
+    "skate": {
+      "trigger": "minecraft:tick",
+      "conditions": {
+        "player": [
+          {
+            "condition": "minecraft:entity_properties",
+            "entity": "this",
+            "predicate": {
+              "equipment": {
+                "feet": {
+                  "items": "winter:ice_skates"
+                }
+              },
+              "stepping_on": {
+                "block": {
+                  "blocks": "#minecraft:ice"
+                }
+              }
+            }
+          }
+        ]
+      }
+    }
+  },
+  "parent": "winter:root"
+}

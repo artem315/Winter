@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "misc",
+  "ingredients": [
+    {
+      "item": "winter:frost_crystal_block"
+    }
+  ],
+  "result": {
+    "id": "winter:frost_crystal",
+    "count": 9
+  }
+}

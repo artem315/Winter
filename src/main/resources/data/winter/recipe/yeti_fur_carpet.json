@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "##"
+  ],
+  "key": {
+    "#": {
+      "item": "winter:yeti_fur_block"
+    }
+  },
+  "result": {
+    "id": "winter:yeti_fur_carpet",
+    "count": 3
+  }
+}

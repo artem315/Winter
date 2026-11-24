@@ -1,0 +1,15 @@
+{
+  "replace": false,
+  "values": [
+    "winter:ice_bricks",
+    "winter:ice_brick_stairs",
+    "winter:ice_brick_slab",
+    "winter:ice_brick_wall",
+    "winter:chiseled_ice_bricks",
+    "winter:frost_crystal_ore",
+    "winter:deepslate_frost_crystal_ore",
+    "winter:frost_crystal_block",
+    "winter:fireplace",
+    "winter:icicle"
+  ]
+}

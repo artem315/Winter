@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "pattern": [
+    "  F",
+    " D ",
+    "B  "
+  ],
+  "key": {
+    "F": {
+      "item": "winter:frost_crystal_block"
+    },
+    "D": {
+      "item": "minecraft:diamond"
+    },
+    "B": {
+      "item": "minecraft:blaze_rod"
+    }
+  },
+  "result": {
+    "id": "winter:frost_staff",
+    "count": 1
+  }
+}

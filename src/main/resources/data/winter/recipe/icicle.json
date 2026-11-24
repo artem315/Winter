@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    "#",
+    "#"
+  ],
+  "key": {
+    "#": {
+      "item": "minecraft:ice"
+    }
+  },
+  "result": {
+    "id": "winter:icicle",
+    "count": 4
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "description": {
+    "translate": "enchantment.winter.frost_aspect"
+  },
+  "supported_items": "#minecraft:enchantable/fire_aspect",
+  "primary_items": "#minecraft:enchantable/sword",
+  "exclusive_set": "#winter:exclusive_set/elemental_aspect",
+  "weight": 2,
+  "max_level": 2,
+  "min_cost": {
+    "base": 10,
+    "per_level_above_first": 20
+  },
+  "max_cost": {
+    "base": 60,
+    "per_level_above_first": 20
+  },
+  "anvil_cost": 4,
+  "slots": [
+    "mainhand"
+  ],
+  "effects": {}
+}
